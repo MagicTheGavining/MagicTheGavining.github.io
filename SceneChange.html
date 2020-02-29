@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<!--Modified by @MagicTheGavining
+Nov. 19, 20 & 21, Dec. 1 2019, Jan 19, 2020 
+Feb. 23, 2020 :shortened code with for loops
+Purpose: To perform different animations/actions
+  for clicking various objects on web page
+  +Moved gem images to DOM body
+  +Use JQuery selectors and for loops to manipulate gems-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Project: Scene change</title>
+        <style>
+        #leafers {
+            position: absolute;
+            top: 210px;
+            left: 378px;
+            z-index: 4;
+        }
+        
+        #octopus {
+            position: absolute;
+            top: 125px;
+            left: 3px;
+            z-index: 4;
+        }
+            
+        </style>
+    </head>
+    <body>
+
+    <img src="https://www.kasandbox.org/programming-images/landscapes/beach-with-palm-trees.png">
+
+    <img src="https://www.kasandbox.org/programming-images/avatars/leafers-seedling.png" id="leafers">
+    
+    <img src="https://www.kasandbox.org/programming-images/space/octopus.png" id="octopus">
+    
+    <!--Gems which are to appear hidden at first, then appear when the treasure chest is clicked on-->
+    <img class = "gem" src = "https://www.kasandbox.org/programming-images/cute/GemOrange.png" alt = "An orange sparkley jewel">
+    <img class = "gem" src = "https://www.kasandbox.org/programming-images/cute/GemBlue.png" alt = "An blue sparkley jewel">
+    <img class = "gem" src = "https://www.kasandbox.org/programming-images/cute/GemGreen.png" alt = "A green sparkley jewel">
+    <img class = "gem" src = "https://www.kasandbox.org/programming-images/cute/GemOrange.png"alt = "An orange sparkley jewel">
+    <img class = "gem" src = "https://www.kasandbox.org/programming-images/cute/GemBlue.png" alt = "An blue sparkley jewel">
+    
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+   
+   <!--Need jQuery's UI library for drag-and-drop -->
+   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+   
+    <script>
+    //placing all code in a function
+    //to make sure it loads on time
+        var wholeScene = function(){
+            //set of global constants
+            const CHEST_TOP = 245;
+            const CHEST_LEFT = 213;
+            const CHEST_WIDTH = 46;
+            const GEM_SIZE = 40;
+        
+            //On mouse clicks, change leafers-seedling
+            //into leafers-tree and back again
+            //+ Generate an annoyed dialog on clicks
+            $("#leafers").on("click", function(event) {
+                var $leafers = $("#leafers");
+                
+                
+                var $dialogue = $('<div style ="background-color:white; color:blue">You <em>CLICKed</em> and transformed me! <strong>Please</strong> click me again to turn me back.</div>');
+                 
+                $dialogue
+                    .attr("id", "leafers-says")
+                    .css("position", "absolute")
+                    .css("left", "58px")
+                    .css("top", "145px")
+                    .css("padding", "15px")
+                    .css("z-index", "4");
+                    
+                //If leafers is in tree form
+                //change back and remove the dialogue
+                if ($leafers.attr("src") === "https://www.kasandbox.org/programming-images/avatars/leafers-tree.png"){
+                    $leafers.attr("src", "https://www.kasandbox.org/programming-images/avatars/leafers-seedling.png");
+                    
+                    $("#leafers-says").remove();
+                    
+                    //Otherwise, change leafers to
+                    //tree form, and add the dialogue
+                } else {
+                    $leafers.attr("src", "https://www.kasandbox.org/programming-images/avatars/leafers-tree.png");
+                    
+                    $dialogue.appendTo("body");
+                }
+                
+                $leafers.appendTo("body");
+                
+            });
+            
+            $("#octopus").on("click", function(event) {
+                var $sayMoveOn = $('<div style ="background-color:white; color:blue">Nothing to see here, move along, just riding an octopus.</div>');
+                 
+                $sayMoveOn
+                    .attr("id", "octopus-says")
+                    .css("position", "absolute")
+                    .css("left", "58px")
+                    .css("top", "85px")
+                    .css("padding", "15px")
+                    .css("z-index", "4");
+                
+                if($('#octopus-says').is(':visible')){
+                    $('#octopus-says').remove();
+                } else {
+                    var $audioEl = $("<audio>");
+                    $audioEl.attr("src", "https://www.kasandbox.org/programming-sounds/rpg/giant-no.mp3");
+                    $audioEl.attr("autoplay", "true");
+                    $audioEl.appendTo("body");
+                    $sayMoveOn.appendTo("body");
+                }
+            });
+            
+            
+            
+            //Add a treasure chest, make it open and
+            //show several jewels
+            //on clicking on this chest
+            var gemTop = [334, 340, 332, 322, 346];
+            var gemLeft = [344, 86, 144, 39, 305];
+            var $treasureChest = $('<img src = "https://www.kasandbox.org/programming-images/cute/ChestClosed.png" alt = "A sealed treasure chest, wonder what is inside">');
+
+            var $dragInstructions = $('<div>Drag the jewels back into the treasure chest to close it.</div>');
+            var $dropZone = $('<div id = "drop-zone"></div>');
+            
+            //Need to place gems in HTML DOM before using this.
+            var $gems = $('.gem');
+            console.log($gems);
+            
+            //Give all the gems their attributes
+            for (i = 0; i < $gems.length; i++){
+                var gem = $gems[i];
+                $(gem)
+                    .attr("width", GEM_SIZE + "px")
+                    .css("position", "absolute")
+                    .css("top", gemTop[i] + "px")
+                    .css("left", gemLeft[i] + "px")
+                    .css("z-index", "3")
+                    .hide();
+            }
+            
+            $dragInstructions
+                .attr("id", "instructions")
+                .css("position", "absolute")
+                .css("left", "0px")
+                .css("top", "0px")
+                .css("z-index", "3")
+                .css("padding", "15px");
+                
+            $treasureChest
+                .attr("id", "treasure-chest")
+                .attr("width", CHEST_WIDTH + "px")
+                .css("position", "absolute")
+                .css("top", CHEST_TOP +"px")
+                .css("left", CHEST_LEFT +"px")
+                .css("z-index", "1")
+                .appendTo("body");
+            
+            $dropZone
+                .css("width", "140px")
+                .css("height", "100px")
+                .css("position", "absolute")
+                .css("left", (CHEST_LEFT + 20) + "px")
+                .css("top", "150px")
+                .css("z-index", "2");
+                
+            var closedChestEl = $treasureChest[0];
+                
+            var startTime = new Date().getTime();
+            
+            var closeAndShrink = function(){
+                //Get rid of the drag and drop stuff
+                //and close the chest back up
+            
+            //Replace the original gem positions and hide them
+            for (i = 0; i < $gems.length; i++){
+                var gem = $gems[i];
+                $(gem)
+                    .css("top", gemTop[i] + "px")
+                    .css("left", gemLeft[i] + "px")
+                    .hide();
+            }
+            
+                $("#instructions").remove();
+                $("#drop-zone").remove();
+                $treasureChest.attr("src","https://www.kasandbox.org/programming-images/cute/ChestClosed.png");
+                //shrink the chest back to size
+                var currTime = new Date().getTime();
+                //console.log(currTime);
+                
+                var newWidth = (180 - ((currTime - startTime)/1000) * 30);
+                var newTop = (43 + ((currTime - startTime)/1000) * 45);
+                //console.log(newTop + "  " + newWidth);
+                closedChestEl.style.width = newWidth + "px"; 
+                closedChestEl.style.top = newTop + "px";
+                if (newWidth > CHEST_WIDTH) {
+                    console.log("requesting frame for closeAndShrink");
+                    window.requestAnimationFrame(closeAndShrink);
+                } else {
+                     window.clearInterval(currTime);
+                    //completed animation, replace EXACT
+                    //original dimensions and position.
+                    $treasureChest
+                        .attr("width", CHEST_WIDTH + "px")
+                        .css("left", CHEST_LEFT)
+                        .css("top", CHEST_TOP);
+                }
+            }
+            
+            var growAndOpen = function() {
+                var currTime = new Date().getTime();
+                      
+                var newWidth = (CHEST_WIDTH + ((currTime - startTime)/1000) * 30);
+                var newTop = (CHEST_TOP - ((currTime - startTime)/1000) * 45);
+                //console.log(newTop + "  " + newWidth);
+                closedChestEl.style.width = newWidth + "px"; 
+                closedChestEl.style.top = newTop + "px";
+                if (newWidth < 180) {
+                    window.requestAnimationFrame(growAndOpen);
+                } else {
+                    window.clearInterval(currTime);
+                    //Animation has finished!
+                    //change to open chest
+                    //and spill some draggable 
+                    //gems
+                    $treasureChest.attr("src", "https://www.kasandbox.org/programming-images/cute/ChestOpen.png");
+                    
+                    //Make all gems visable and dragable
+                    for (i = 0; i < $gems.length; i++){
+                        var gem = $gems[i];
+                        $(gem)
+                            .show()
+                            .draggable();
+                    }
+                    
+                    $dragInstructions
+                        .appendTo("body");
+                    $dropZone
+                        .css("background-color", "black")
+                        .appendTo("body");
+                                
+                    var count = 0;
+                    $dropZone.droppable({
+                        drop: function(event, ui) {
+                            $(this).css('background', 'pink');
+                            count++;
+                            if(count >= 5) {
+                                console.log("ALL IN!");
+                                startTime = new Date().getTime();
+                                closeAndShrink();
+                            }
+                        },
+                        over: function(event, ui) {
+                            $(this).css('background', 'purple');
+                        },
+                        out: function(event, ui) {
+                            $(this).css('background', 'black');
+                            count--;
+                        }
+                    });
+                }
+                    
+            };
+    
+                
+            $treasureChest.on("click", function(event) {
+                //Using a timer, open the chest and show
+                //a jewel for a set amount of seconds
+                
+                if ($treasureChest.attr("src") === "https://www.kasandbox.org/programming-images/cute/ChestClosed.png") {
+                        startTime = new Date().getTime();
+                        growAndOpen();
+                } 
+                
+            });
+        }
+        
+        $(document).ready(function() {
+		    wholeScene();
+	    });
+    </script>
+    </body>
+</html>
