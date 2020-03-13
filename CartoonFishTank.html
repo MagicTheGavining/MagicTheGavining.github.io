@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<!-- This is based on DillingerLee's great template here:
+https://github.com/Team-Code/KA_Offline -->
+<html> 
+ <head>
+ 	<meta charset="utf-8">
+    <title>Cartoon Fish Tank</title>
+    <style>
+ 		#mycanvas{
+ 			padding: 0px;
+ 			border-width: 0px;
+ 			position: absolute;
+ 			top: 0px;
+ 			left: 0px;
+ 		}
+ 	</style>
+</head>
+ <body>
+	<!--This draws the Canvas on the webpage -->
+      <canvas id="mycanvas" padding=0 border=0></canvas> 
+ </body>
+ 
+ <!-- Run all the JavaScript stuff -->
+ <!-- Include the processing.js library -->
+ <!-- See https://khanacademy.zendesk.com/hc/en-us/articles/202260404-What-parts-of-ProcessingJS-does-Khan-Academy-support- for differences -->
+ <script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script> 
+ 
+ <script>
+    var sketchProc = function(processingInstance) {
+     with (processingInstance) {
+        size(window.innerWidth, window.innerHeight); 
+        frameRate(40);
+        
+        // ProgramCodeGoesHere
+       /**********************************
+ * Created by MagicTheGavining
+ * Oct. 24, 2019, Nov. 15 & 17, 2019
+ * Mar. 3, 5, 7, 8, 10 2020
+ * + Change line sizes for scaling down
+ * - Even fewer calculations per frame
+ * + 3 speeds based on tail width
+ * - Reduction of calculations per frame
+ * + Scoop net to purge fish
+ * + Opening and closing mouths
+ * + Eyebrows
+ * + Googly eyes with back shadows
+ * + Moving fish
+ * + Tail swimming animation
+ * + Fish now blink randomly
+ * + Added fishParts array, removed explicit calls to drawFish
+ * + Added draw function, and position arrays to allow animation
+ * + Use mouse clicks to generate more fish in the tank
+ * + SeaWeed and pebbles with random number generation
+ * + Random shades of green for sea weed, thanks to Solo Spencer
+ *   for his question on that trait
+ * + Treasure chest!
+ * ********************************/
+ //TODO:
+ // MAKE # OF SEA WEEDS AND PLACEMENT DEPENDENT ON CANVAS WIDTH
+ // MAKE HEIGHT OF SEA WEED DEPENDENT ON CANVAS HEIGHT
+ // MAKE FISH HAVE VARIABLE SPEED
+ // CHANGE TREASURE CHEST TO DRAWN CHEST
+ // MAKE BUBBLES
+ // MAKE TREASURE CHEST OPEN AND CLOSE WITH BUBBLES COMING OUT
+ // MAKE GRAVEL COLOR CHANGABLE
+var NET_SIZE = height * 0.15;
+var SAND_LUMP_WIDTH = round( width/6 );
+var SAND_LUMP_HEIGHT_A = round(height * 0.15);
+var SAND_LUMP_HEIGHT_B = round(height * 0.13);
+var SAND_LUMP_HEIGHT_C = round(height * 0.10);
+var PUPIL_X_ADJUST = 4;
+var PUPIL_Y_ADJUST = 6;
+var BLINK_FRAME_LENGTH = 30;
+var BLINK_FREQUENCY = 100;
+var MOUTH_FREQUENCY = 125;
+var TAIL_SPEED_A = 0.02;
+var TAIL_SPEED_B = 0.07;
+var FISH_FAST_SPEED = round(width * 0.005);
+var FISH_MEDIUM_SPEED = round(width * 0.0025);
+var FISH_SLOW_SPEED = width * 0.00125;
+var MOUTH_FRAME_LENGTH = 60;
+var PATCHX = round(width * 0.075);
+
+var sandRed = floor(random(150, 256));
+var sandGreen = floor(random(150, 256));
+var sandBlue = floor(random(150, 256));
+var sandFill = color(sandRed, sandGreen, sandBlue);
+var sandStroke = color(sandRed - 30, sandGreen - 30, sandBlue - 30);
+var halfAquarium = round(width * 0.5);
+var thirdAquarium = floor(width * 0.3333);
+var halfAquariumTall = (height * 0.5);
+var fishBodyLengthMin = (width * 0.05);
+var fishBodyHeightMin = (height * 0.0375);
+var gravelSize = (width * 0.025);
+
+var treasureX = (width * 0.3575);
+var treasureY = (height * 0.84);
+var treasureSize = (width * 0.105);
+
+var strokeWeight2 = 2;
+var strokeWeight5 =  5;
+var strokeWeight10 = 10;
+
+if (width < 390 ) {
+    strokeWeight2 = 1;
+    strokeWeight5 = 3;
+    strokeWeight10 = 6;
+}
+
+//var xGravelPositions = [];
+var yGravelPositions = [];
+var xSeaWeedPositions = [];
+var ySeaWeedPositions = [(height * 0.2425), (height * 0.28), (height * 0.3375), (height * 0.15), (height * 0.05)];
+var xBubblePositions = [];
+var yBubblePositions = [];
+var currentTailWidth = []; //Allows for tail animation
+
+
+var fishParts = [ {
+        centerX: 119,
+        centerY: 155,
+        speed: FISH_MEDIUM_SPEED,
+        bodyLength: 118,
+        bodyHeight: 74,
+        bodyColor: color(162, 0, 255),
+        tailWidth: 0.25,
+        tailHeight: 0.5,
+        leftEyeFromCenterX: round(118/4), //bodyLength/4
+        rightEyeFromCenterX: round(118/6) , //bodyLength/6
+        tailStartFromCenterX: round(118/2), //bodyLength/2
+        facesEast: false,
+        blink: false,
+        blinkCounter: BLINK_FRAME_LENGTH,
+        openMouth: false,
+        mouthCounter: MOUTH_FRAME_LENGTH,
+        
+        //Used for proportional fish parts
+        thirdLength: round(118/3),
+        thirdHeight: round(74/3),
+        
+        fourthLength: round(118/4),
+        fourthHeight: round(74/4),
+        
+        fifthLength: round(118/5),
+        
+        tenthLength: round(118/10),
+        tenthHeight: round(74/10),
+        
+        eleventhHeight: round(74/11),
+        
+        twelvthLength: round(118/12),
+        twelvthHeight: round(74/12)
+    },
+    {
+        centerX: 290,
+        centerY: 223,
+        speed: FISH_SLOW_SPEED,
+        bodyLength: 182,
+        bodyHeight: 55,
+        bodyColor: color(68, 235, 35),
+        tailWidth: 0.125,
+        tailHeight: 0.25,
+        leftEyeFromCenterX: (182/4), //bodyLength/4
+        rightEyeFromCenterX: (182/6) , //bodyLength/6
+        tailStartFromCenterX: (182/2), //bodyLength/2
+        facesEast: true,
+        blink: false,
+        blinkCounter: BLINK_FRAME_LENGTH,
+        openMouth: false,
+        mouthCounter: MOUTH_FRAME_LENGTH,
+        
+        //Used for proportional fish parts
+        thirdLength: round(182/3),
+        thirdHeight: round(55/3),
+        
+        fourthLength: round(182/4),
+        fourthHeight: round(55/4),
+        
+        fifthLength: round(182/5),
+        
+        tenthLength: round(182/10),
+        tenthHeight: round(55/10),
+        
+        eleventhHeight: round(55/11),
+        
+        twelvthLength: round(182/12),
+        twelvthHeight: round(55/12)
+    },
+    {
+        centerX: 280,
+        centerY: 320,
+        speed: FISH_FAST_SPEED,
+        bodyLength: 78,
+        bodyHeight: 74,
+        bodyColor: color(255, 255, 25),
+        tailWidth: 0.5,
+        tailHeight: 0.60,
+        leftEyeFromCenterX: (78/4), //bodyLength/4
+        rightEyeFromCenterX: (78/6) , //bodyLength/6
+        tailStartFromCenterX: (78/2), //bodyLength/2
+        facesEast: true,
+        blink: false,
+        blinkCounter: BLINK_FRAME_LENGTH,
+        openMouth: false,
+        mouthCounter: MOUTH_FRAME_LENGTH,
+        
+        //Used for proportional fish parts
+        thirdLength: round(78/3),
+        thirdHeight: round(74/3),
+        
+        fourthLength: round(78/4),
+        fourthHeight: round(74/4),
+        
+        fifthLength: round(78/5),
+        
+        tenthLength: round(78/10),
+        tenthHeight: round(74/10),
+        
+        eleventhHeight: round(74/11),
+        
+        twelvthLength: round(78/12),
+        twelvthHeight: round(74/12)
+    }
+];
+
+if(width < 350 || height < 350){
+    for(var i = 0; i< fishParts.length; i++){
+        fishParts[i].centerX = floor(random(0, width));
+        fishParts[i].centerY = floor(random(0, height));
+    }
+}
+
+for (var f = 0; f < fishParts.length; f++) {
+    var tailValues = {
+        decreasing: true,
+        tailWidth: (fishParts[f].tailWidth)
+    };
+    currentTailWidth.push(tailValues);
+}
+
+var count = 1;
+for(var i = 0; i < width; i += SAND_LUMP_WIDTH) {
+    //xGravelPositions.push(i);  Not needed, just use "i" again when drawing
+    if(count%3 === 0){
+        //println('A: ' + SAND_LUMP_HEIGHT_A);
+        yGravelPositions.push(height);
+    } else if (count%3 === 1) {
+        //println('B: ' + SAND_LUMP_HEIGHT_B);
+        yGravelPositions.push(height);
+    } else {
+        //println('C: ' + SAND_LUMP_HEIGHT_C);
+        yGravelPositions.push(height);
+    }
+    count++;
+}
+
+for (var i=0; i < 5; i++) {
+    xSeaWeedPositions[i] = floor(random(0, (width +1)));
+}
+
+//SeaWeed random shade of green fill
+var capFillGreen = floor(random(10, 256));
+var lowFillRed = floor(random(0, capFillGreen));
+if( capFillGreen > 230) { //prevent sea weed from becoming
+                            //too close to background color
+    capFillGreen = 230;
+}
+var lowFillBlue = floor(random(0, capFillGreen));
+
+//Sea weed random shade green for line stroke
+var capLineGreen = floor(random(10, 256));
+var lowLineRed = floor(random(0, capLineGreen));
+if( capLineGreen > 230) { //prevent sea weed from becoming
+                            //too close to background color
+    capLineGreen = 230;
+}
+var lowLineBlue = floor(random(0, capLineGreen));
+
+//Fish net-looking reset button
+var drawResetButton = function (){
+    var adjusted10 = width * 0.025;
+    var adjusted20 = width * 0.05;
+    stroke(5, 97, 0);
+    strokeWeight(strokeWeight2);
+    fill(52, 207, 0, 0);
+    rect(width - (10 + NET_SIZE), 10, NET_SIZE, NET_SIZE);
+    stroke(52, 207, 0);
+    var lineStartX = width - (10 + NET_SIZE);
+    var lineEndX =width - (10 + NET_SIZE);
+    var lineEndY = (10 + NET_SIZE);
+    for(var lineStartY = (10 + NET_SIZE); lineStartY > 10; lineStartY -= strokeWeight5){
+        line(lineStartX, lineStartY, lineEndX, lineEndY);
+        lineEndX += strokeWeight5;
+    }
+    for(var lineStartX = width - (10 + NET_SIZE); lineStartX < width - 10; lineStartX += strokeWeight5){
+        line(lineStartX, lineStartY, lineEndX, lineEndY);
+        lineEndY -= strokeWeight5;
+    }
+    
+    lineStartX = width - 10;
+    lineEndX = width - 10;
+    lineEndY = (10 + NET_SIZE);
+    for(var lineStartY = (10 + NET_SIZE); lineStartY > 10; lineStartY -= strokeWeight5){
+        line(lineStartX, lineStartY, lineEndX, lineEndY);
+        lineEndX -= strokeWeight5;
+    }
+    for(var lineStartX = width - 10; lineStartX > width - (10 + NET_SIZE); lineStartX -= strokeWeight5){
+        line(lineStartX, lineStartY, lineEndX, lineEndY);
+        lineEndY -= strokeWeight5;
+    }
+    
+    //Cycle - restart symbol
+    var halfNet = NET_SIZE/2;
+    //stroke(255);
+    //strokeWeight(strokeWeight10);
+    //fill(255, 255, 255, 0);
+    //ellipse (width - (10 + halfNet), 10 + halfNet, halfNet, halfNet);
+    //fill(255);
+    //stroke(52, 207, 0);
+    //strokeWeight(strokeWeight2);
+    //triangle(width - (10 + NET_SIZE), 10 + halfNet, width - ( 10 + halfNet), 10 + halfNet, width - ( 23 + halfNet), 20 + halfNet);
+    //Patch for top of triangle
+    //noStroke();
+    //rect(width - (PATCHX + halfNet), 9 + halfNet, strokeWeight10, strokeWeight2);
+    
+    //Net Handle
+    strokeWeight(strokeWeight2);
+    stroke(5, 97, 0);
+    line(width - (10 + halfNet), 10, width - halfNet, 0);
+    
+};
+
+var drawFishEyebrows = function (aFish, currentTailWidth){
+    var longestDimension = aFish.bodyLength;
+    var halfLongest = longestDimension/2;
+    var slanted = 0;
+    
+    if( aFish.bodyLength < aFish.bodyHeight) {
+        longestDimension = aFish.bodyHeight;
+        halfLongest = longestDimension/2;
+        slanted = aFish.bodyHeight/40;
+    }
+    
+    strokeWeight( strokeWeight5 );
+    
+    if( aFish.facesEast ){
+        line( aFish.centerX + aFish.leftEyeFromCenterX, ( aFish.centerY - halfLongest),
+            aFish.centerX + aFish.leftEyeFromCenterX + strokeWeight5, ( aFish.centerY - halfLongest) + slanted);
+        line( aFish.centerX + aFish.rightEyeFromCenterX, ( aFish.centerY - halfLongest),
+            aFish.centerX + aFish.rightEyeFromCenterX - strokeWeight5, ( aFish.centerY - halfLongest) + slanted);
+    } else { //facing West
+        line( aFish.centerX - aFish.leftEyeFromCenterX, ( aFish.centerY - halfLongest ),
+            aFish.centerX - aFish.leftEyeFromCenterX - strokeWeight5, ( aFish.centerY - halfLongest) + slanted);
+        line( aFish.centerX - aFish.rightEyeFromCenterX, ( aFish.centerY - halfLongest),
+            aFish.centerX - aFish.rightEyeFromCenterX + strokeWeight5, ( aFish.centerY - halfLongest) + slanted);
+    }
+};
+
+var drawMouth = function( aFish ) {
+
+    if( aFish.facesEast ){
+        if ( aFish.mouthOpen ) {
+            fill(0);
+            ellipse(aFish.centerX + aFish.fourthLength, aFish.centerY + aFish.fourthHeight, aFish.fifthLength, aFish.tenthHeight);
+            fill(255, 0, 0);
+            ellipse(aFish.centerX + aFish.fourthLength - strokeWeight5, aFish.centerY + aFish.fourthHeight + strokeWeight2, aFish.fifthLength, aFish.tenthHeight);
+        } else {
+            strokeWeight(strokeWeight2);
+            ellipse(aFish.centerX + aFish.thirdLength, aFish.centerY + aFish.fourthHeight, aFish.tenthLength, aFish.tenthHeight);
+            line(aFish.centerX + aFish.thirdLength, aFish.centerY + aFish.fourthHeight, aFish.centerX + aFish.bodyLength*0.3466, aFish.centerY + aFish.fourthHeight);
+        }
+    } else { //facing West
+        if ( aFish.mouthOpen ) {
+            fill(0);
+            ellipse( aFish.centerX - aFish.fourthLength, aFish.centerY + aFish.fourthHeight, aFish.fifthLength, aFish.tenthHeight);
+            fill(255, 0, 0);
+            ellipse( aFish.centerX - aFish.fourthLength + strokeWeight5, aFish.centerY + aFish.fourthHeight + strokeWeight2, aFish.fifthLength, aFish.tenthHeight);
+        } else {
+            strokeWeight(strokeWeight2);
+            ellipse( aFish.centerX - aFish.thirdLength, aFish.centerY + aFish.fourthHeight, aFish.tenthLength, aFish.tenthHeight);
+            line( aFish.centerX - aFish.thirdLength, aFish.centerY + aFish.fourthHeight, aFish.centerX - aFish.bodyLength*0.3466, aFish.centerY + aFish.fourthHeight);
+        }
+    }
+    strokeWeight(strokeWeight5);
+    fill( aFish.bodyColor );
+};
+
+
+
+var drawFish = function( aFish, currentTailWidth ){
+    
+    //eye outline behind body
+    if ( !aFish.blink ){
+        stroke(0);
+        strokeWeight(strokeWeight5);
+        if (aFish.facesEast){
+            ellipse(aFish.centerX+aFish.leftEyeFromCenterX, aFish.centerY - aFish.thirdHeight, aFish.thirdHeight, aFish.thirdLength);
+            ellipse(aFish.centerX+aFish.rightEyeFromCenterX, aFish.centerY - aFish.thirdHeight, aFish.thirdHeight, aFish.thirdLength);
+        } else { //facesWest
+            ellipse(aFish.centerX-aFish.leftEyeFromCenterX, aFish.centerY - aFish.thirdHeight, aFish.thirdHeight, aFish.thirdLength);
+            ellipse(aFish.centerX - aFish.rightEyeFromCenterX, aFish.centerY - aFish.thirdHeight, aFish.thirdHeight, aFish.thirdLength);
+        }
+    }
+    stroke(0);
+    strokeWeight(strokeWeight5);
+    fill(aFish.bodyColor);
+    
+    // body
+    ellipse(aFish.centerX, aFish.centerY, aFish.bodyLength, aFish.bodyHeight);
+    
+    drawMouth( aFish );
+    
+    // tail
+    if (aFish.facesEast) {
+        triangle(
+            aFish.centerX - aFish.tailStartFromCenterX, aFish.centerY,
+            aFish.centerX - aFish.tailStartFromCenterX-aFish.bodyLength * currentTailWidth, aFish.centerY - aFish.bodyHeight * aFish.tailHeight,
+            aFish.centerX-aFish.tailStartFromCenterX - aFish.bodyLength * currentTailWidth, aFish.centerY + aFish.bodyHeight * aFish.tailHeight
+        );
+    } else {
+        triangle(
+            aFish.centerX + aFish.tailStartFromCenterX, aFish.centerY,
+            aFish.centerX + aFish.tailStartFromCenterX + aFish.bodyLength * currentTailWidth, aFish.centerY - aFish.bodyHeight * aFish.tailHeight,
+            aFish.centerX + aFish.tailStartFromCenterX + aFish.bodyLength * currentTailWidth, aFish.centerY + aFish.bodyHeight * aFish.tailHeight
+        );
+    }
+    
+    // eye
+    if (!aFish.blink){
+        fill(255);
+        strokeWeight(strokeWeight2);
+        if( aFish.facesEast ){
+            ellipse( aFish.centerX + aFish.leftEyeFromCenterX, aFish.centerY - aFish.thirdHeight, aFish.thirdHeight, aFish.thirdLength);
+            fill(15);
+            ellipse(aFish.centerX + aFish.leftEyeFromCenterX + aFish.eleventhHeight, aFish.centerY - aFish.thirdHeight, aFish.twelvthHeight, aFish.twelvthLength);
+            fill(255);
+            ellipse( aFish.centerX + aFish.rightEyeFromCenterX, aFish.centerY - aFish.thirdHeight, aFish.thirdHeight, aFish.thirdLength);
+            fill(15);
+            ellipse( aFish.centerX + aFish.rightEyeFromCenterX + aFish.eleventhHeight, aFish.centerY - aFish.thirdHeight, aFish.twelvthHeight, aFish.twelvthLength);
+        } else { //facesWest
+            ellipse( aFish.centerX - aFish.leftEyeFromCenterX, aFish.centerY - aFish.thirdHeight, aFish.thirdHeight, aFish.thirdLength);
+            fill(15);
+            ellipse( aFish.centerX - aFish.leftEyeFromCenterX - aFish.eleventhHeight, aFish.centerY - aFish.thirdHeight, aFish.twelvthHeight, aFish.twelvthLength);
+            fill(255);
+            ellipse( aFish.centerX - aFish.rightEyeFromCenterX, aFish.centerY - aFish.thirdHeight, aFish.thirdHeight, aFish.thirdLength );
+            fill(15);
+            ellipse( aFish.centerX - aFish.rightEyeFromCenterX - aFish.eleventhHeight, aFish.centerY - aFish.thirdHeight, aFish.twelvthHeight, aFish.twelvthLength);
+        }
+
+        drawFishEyebrows( aFish );
+        
+    } else { //blink
+        if (aFish.facesEast){
+            line( aFish.centerX + ( aFish.leftEyeFromCenterX - strokeWeight2), aFish.centerY - aFish.thirdHeight, aFish.centerX + ( aFish.leftEyeFromCenterX + strokeWeight2), aFish.centerY - aFish.thirdHeight);
+            line( aFish.centerX + ( aFish.rightEyeFromCenterX - strokeWeight2), aFish.centerY - aFish.thirdHeight, aFish.centerX + ( aFish.leftEyeFromCenterX + strokeWeight2), aFish.centerY - aFish.thirdHeight);
+        } else { //faces West
+            line( aFish.centerX - ( aFish.leftEyeFromCenterX - strokeWeight2 ), aFish.centerY - aFish.thirdHeight, aFish.centerX - ( aFish.leftEyeFromCenterX + strokeWeight2 ), aFish.centerY - aFish.thirdHeight);
+            line( aFish.centerX - ( aFish.rightEyeFromCenterX - strokeWeight2 ), aFish.centerY - aFish.thirdHeight, aFish.centerX - ( aFish.leftEyeFromCenterX + strokeWeight2 ), aFish.centerY - aFish.thirdHeight );
+        }
+    }
+}; 
+
+var drawSeaWeed = function( x, top ) {
+    
+    stroke(lowLineRed, capLineGreen, lowLineBlue);
+    strokeWeight(strokeWeight2);
+    fill(lowFillRed, capFillGreen, lowFillBlue);
+    beginShape();
+        curveVertex( x + 44, height);
+        curveVertex( x - 4, height); 
+        curveVertex( x + 12, top + 258);
+        curveVertex( x - 44, top + 245 );
+        curveVertex( x + 12, top + 151);
+        curveVertex( x - 35, top + 121);
+        curveVertex( x - 12, top + 84);
+        curveVertex( x + 22, top + 67);
+        curveVertex( x, top - 16); 
+        curveVertex( x, top); 
+    endShape();
+};
+
+
+
+draw = function() {
+     background(89, 216, 255);
+    
+    //Bonus # 4, sea weed
+    for (var i = 0; i < xSeaWeedPositions.length; i += 2) {
+        drawSeaWeed( xSeaWeedPositions[i], ySeaWeedPositions[i]);
+    }
+    
+    
+    //Sand and Gravel on Bottom
+    stroke(sandStroke);
+    fill(sandFill);
+    var count = 0;
+    var sandX = 0;
+    for(var i = 0; i < yGravelPositions.length; i++){
+        if( count%3 === 0) {
+            ellipse( sandX, yGravelPositions[i], SAND_LUMP_WIDTH + 90, SAND_LUMP_HEIGHT_A);
+        } else if( count%3 === 1) {
+            ellipse( sandX, yGravelPositions[i], SAND_LUMP_WIDTH + 90, SAND_LUMP_HEIGHT_B);
+        } else { //count%3 === 2
+            ellipse( sandX, yGravelPositions[i], SAND_LUMP_WIDTH + 90, SAND_LUMP_HEIGHT_C);
+        }
+        sandX += SAND_LUMP_WIDTH;
+        count++;
+    }
+    
+    //A cute little treasure chest decoration
+    //With an outline to match the fish
+    /*stroke(0);
+    fill(0);
+    rect(treasureX - 3, treasureY + 8, treasureSize + 6, treasureSize - 4, 3);
+    image(getImage("cute/ChestClosed"), treasureX, treasureY, treasureSize, treasureSize);*/
+    
+    //Draw all of the fish in fishParts[] each time through draw()
+    for (var f = 0; f < fishParts.length; f++){
+        
+        //Blinking animation
+        if(floor(random(0, BLINK_FREQUENCY)) === 10 && fishParts[f].blinkCounter > 0){
+            fishParts[f].blink = true;
+        } else if (fishParts[f].blinkCounter > 0 ) {
+            fishParts[f].blinkCounter--;
+        } else {
+            fishParts[f].blink = false;
+            fishParts[f].blinkCounter = BLINK_FRAME_LENGTH;
+        }
+        
+        //Mouth open animation
+        if(floor(random(0, MOUTH_FREQUENCY)) === 24 && fishParts[f].mouthCounter > 0){
+            fishParts[f].mouthOpen = true;
+        } else if (fishParts[f].mouthCounter > 0 ) {
+            fishParts[f].mouthCounter--;
+        } else {
+            fishParts[f].mouthOpen = false;
+            fishParts[f].mouthCounter = MOUTH_FRAME_LENGTH;
+        }
+        
+        //Swim tail animation
+        if(currentTailWidth[f].tailWidth > 0.05 && currentTailWidth[f].decreasing) {
+            currentTailWidth[f].tailWidth = currentTailWidth[f].tailWidth - TAIL_SPEED_A;
+        } else if (currentTailWidth[f].tailWidth < fishParts[f].tailWidth && !currentTailWidth[f].decreasing) {
+            currentTailWidth[f].tailWidth = currentTailWidth[f].tailWidth + TAIL_SPEED_B;
+        } else if (currentTailWidth[f].tailWidth <= 0.05) {
+            currentTailWidth[f].decreasing = false;
+        } else {
+            currentTailWidth[f].decreasing = true;
+        }
+        
+        drawFish( fishParts[f], currentTailWidth[f].tailWidth );
+        
+        if (fishParts[f].facesEast && fishParts[f].centerX < width ) {
+            fishParts[f].centerX = fishParts[f].centerX + fishParts[f].speed;
+        } else {
+            fishParts[f].facesEast = false;
+        }
+        if (!fishParts[f].facesEast && fishParts[f].centerX > 0) {
+            fishParts[f].centerX = fishParts[f].centerX - fishParts[f].speed;
+        } else {
+            fishParts[f].facesEast = true;
+        }
+    }
+    
+    for (var i = 1; i < xSeaWeedPositions.length; i += 2) {
+        drawSeaWeed( xSeaWeedPositions[i], ySeaWeedPositions[i]);
+    }
+    
+    drawResetButton();
+
+    
+};
+
+
+mouseClicked = function(){
+    if (mouseX >= width - (10 + NET_SIZE) && mouseX <= width - 10 && mouseY >= 10 && mouseY <= 10 + NET_SIZE){
+        for(var f = 0; f < fishParts.length; i++){
+            fishParts.pop();
+        }
+        
+        for(var s = 0; s < xSeaWeedPositions.length; i++){
+            xSeaWeedPositions.pop();
+        }
+        for (var i=0; i < 5; i++) {
+            xSeaWeedPositions[i] = floor(random(0, (width +1)));
+        }
+        
+        //SeaWeed random shade of green fill
+        capFillGreen = floor(random(10, 256));
+        lowFillRed = floor(random(0, capFillGreen));
+        if( capFillGreen > 230) { //prevent sea weed from becoming
+                                    //too close to background color
+            capFillGreen = 230;
+        }
+        lowFillBlue = floor(random(0, capFillGreen));
+        
+        //Sea weed random shade green for line stroke
+        capLineGreen = floor(random(10, 256));
+        lowLineRed = floor(random(0, capLineGreen));
+        if( capLineGreen > 230) { //prevent sea weed from becoming
+                                    //too close to background color
+            capLineGreen = 230;
+        }
+        lowLineBlue = floor(random(0, capLineGreen));
+        
+        sandRed = floor(random(150, 256));
+        sandGreen = floor(random(150, 256));
+        sandBlue = floor(random(150, 256));
+        sandFill = color(sandRed, sandGreen, sandBlue);
+        sandStroke = color(sandRed - 30, sandGreen - 30, sandBlue - 30);
+    } else { //Cicked anywhere but the reset button, create new random fish!
+        var randomBool = floor(random(0, 2));
+        var tempLength = floor(random(fishBodyLengthMin, thirdAquarium));
+        var tempHeight = floor(random(fishBodyHeightMin, halfAquariumTall));
+        var newFish = {
+            centerX: mouseX,
+            centerY: mouseY,
+            speed: FISH_MEDIUM_SPEED,
+            bodyLength: tempLength,
+            bodyHeight: tempHeight,
+            bodyColor: (color(floor(random(0, 256)), floor(random(0, 256)), floor(random(0, 256)))),
+            tailWidth: (1/random( 1, 6 )),
+            tailHeight: (1/random(1, 5 )),
+            leftEyeFromCenterX: tempLength/4, 
+            rightEyeFromCenterX: tempLength/6,
+            tailStartFromCenterX: tempLength/2,
+            facesEast: randomBool,
+            blink: false,
+            blinkCounter: BLINK_FRAME_LENGTH,
+            openMouth: false,
+            mouthCounter: MOUTH_FRAME_LENGTH,
+            
+            //Used for proportional fish parts
+            thirdLength: round(tempLength/3),
+            thirdHeight: round(tempHeight/3),
+            
+            fourthLength: round(tempLength/4),
+            fourthHeight: round(tempHeight/4),
+            
+            fifthLength: round(tempLength/5),
+            
+            tenthLength: round(tempLength/10),
+            tenthHeight: round(tempHeight/10),
+            
+            eleventhHeight: round(tempHeight/11),
+            
+            twelvthLength: round(tempLength/12),
+            twelvthHeight: round(tempHeight/12)
+        };
+        
+        if( newFish.tailWidth >= 0.5 ){
+            newFish.speed = FISH_FAST_SPEED;
+        } else if (newFish.tailWidth >= 0.25) {
+            newFish.speed = FISH_MEDIUM_SPEED;
+        } else { //tiny tail
+            newFish.speed = FISH_SLOW_SPEED;
+        }
+        
+        fishParts.push(newFish);
+        
+        var tailValues = {
+            decreasing: true,
+            tailWidth: (newFish.tailWidth)
+        };
+        currentTailWidth.push(tailValues);
+    }
+
+};
+    }};
+
+    // Get the canvas that Processing-js will use
+    var canvas = document.getElementById("mycanvas"); 
+    // Pass the function sketchProc (defined in myCode.js) to Processing's constructor.
+    var processingInstance = new Processing(canvas, sketchProc); 
+ </script>
+
+</html>
