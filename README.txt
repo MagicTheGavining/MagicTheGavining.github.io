@@ -15,8 +15,14 @@ CartoonFishTank.html
 /**********************************
  * Created by MagicTheGavining
  * Cartoon style of "New Retro" from Chris Hart's book "Cartoon Cool"
+ * Resizable version at: https://magicthegavining.github.io/CartoonFishTank.html
  * Oct. 24, 2019, Nov. 15 & 17, 2019
- * Mar. 3, 5, 7, 8, 10, 15 2020
+ * Mar. 3, 5, 7, 8, 10, 15, 16, 19, 22, 2020
+ * + Cartoon starfish about 1 in every 8 clicks!
+ * - Reduction of calculations for bubble shine
+ * + Random background water color
+ * + Initial 3 fish now resize based on screen width
+ * + Bubbles with shines!
  * + Made amount and widths of sea weeds scale to canvas size
  * + Change line sizes for scaling down
  * - Even fewer calculations per frame
