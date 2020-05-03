@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<!-- This is based on DillingerLee's great template here:
+https://github.com/Team-Code/KA_Offline -->
+<html> 
+ <head>
+ 	<link rel="icon" type="image/png" href="favicon.png">
+ 	<meta charset="utf-8">
+    <title>Magic 8 Ball</title> 
+</head>
+ <body>
+    <p align="center"> 
+	<!--This draws the Canvas on the webpage -->
+      <canvas id="mycanvas"></canvas> 
+    </p>
+ </body>
+ 
+ <!-- Run all the JavaScript stuff -->
+ <!-- Include the processing.js library -->
+ <!-- See https://khanacademy.zendesk.com/hc/en-us/articles/202260404-What-parts-of-ProcessingJS-does-Khan-Academy-support- for differences -->
+ <script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script> 
+ 
+ <script>
+ 	var smallestDim = 100; //Smallest dimension I am allowing.
+ 	if( (window.innerWidth <= window.innerHeight) && (window.innerWidth > 99)){
+ 		smallestDim = window.innerWidth;
+ 	} else if( (window.innerWidth > window.innerHeight) && (window.innerHeight > 99)){
+ 		smallestDim = window.innerHeight;
+ 	}
+    var sketchProc = function(processingInstance) {
+     with (processingInstance) {
+        size(smallestDim, smallestDim); 
+        frameRate(30);
+        
+        // ProgramCodeGoesHere
+/*****************
+* Modified by MagicTheGavining
+* Resizable version: https://magicthegavining.github.io/Magic8Ball.html
+* Oct. 25 & 31, 2019, Nov. 2, 2019
+* Feb. 26 - 29, 2020, Mar. 17, 2020
+* Apr. 29 + 30, 2020, May 1 + 2, 2020
+* +Generates "infinity" amount of answers
+* (According to Google's calculator)
+* +Added word lists to generate
+*  "Mad Libs" answers
+* -Changed some of the answers
+* +Font scaling function that
+*  mostly works!!!
+* +Scaling of all drawn parts to
+*  different canvas sizes!  Ach! 
+*  just 121 more lines of code!!!
+*  (mostly global variables)
+* +Reveal number of possible
+*  answers when lower left is clicked
+* +Infused with purple spirit power!
+* +Switch Statement to replace if/else
+* +Different Colored triangles
+* +Function to draw triangle
+* +8 Ball's Number
+* +Purple liquid behind triangle
+* +Ask button and instructions
+* +Color changing button
+* +Sparks on new answer
+*****************/
+
+//Array duplicate removal function
+//based on dota2pro's answer on Stack Overflow
+//https://stackoverflow.com/questions/1584370/how-to-merge-two-arrays-in-javascript-and-de-duplicate-items
+var arrayUnique = function(incommingArray) {
+    var currentArray = incommingArray;
+    
+    for(var i=0; i<currentArray.length; ++i) {
+        for(var j=i+1; j<currentArray.length; ++j) {
+            if(currentArray[i] === currentArray[j]) {
+                currentArray.splice(j--, 1);
+            }
+        }
+    }
+
+    return currentArray;
+};
+
+var singleIdentifiers = [" A", "ONE", "THIS", "THE"];
+//var multiIdentifiers = [ "ALL", "FOUR", "MANY", "SOME", "THE", "TWO"];
+var threeLetterPositiveAdjectives = ["AFT", "APT", "AZO", "BIG", "COY", "CUT", "DEF", "DRY", "DUE", "DUN", "ECO", "EMO", "FAR", "FAT", "FED", "FEM", "FEY", "FLY", "FUN", "GR8", "HEP", "HIP", "HIT", "HOT", "ILL", "KEY", "LAO", "LAX", "LIL", "LIT", "LOW", "LUX", "MAN", "MAX", "MOD", "MUM", "NEW", "OLD", "PET", "PRO", "RED", "SHY", "SLY", "TAI", "TAN", "TIN", "TOP", "TOY", "WAX", "WED", "WEE", "WET", "YUM", "ZEN"];
+var threeLetterNegativeAdjectives = ["AFT", "AZO", "BAD", "BUM", "CUT", "DIM", "DRY", "DUD", "DUE", "DUN", "EMO", "FAR", "FAT", "FEM", "FEY", "FOE", "FOU", "ICK", "ICY", "ILL", "LIL", "LIT", "LAO", "LAX", "LOW", "MAD", "MAN", "MAX", "MEH", "MOD", "MUM", "NEW", "NTH", "ODD", "OFF", "OLD", "PET", "RAW", "RED", "SAD", "SHY", "TAI", "TAN", "TOY", "WAN", "WAX", "WED", "WEE", "WET"];
+
+//Merge both above arrays and remove duplicates
+var threeLetterAdjectives = threeLetterPositiveAdjectives.concat(threeLetterNegativeAdjectives);
+threeLetterAdjectives = arrayUnique(threeLetterAdjectives);
+
+var fourToSixLetterSingleSubjects = ["ABBOT", "ABYSS", "ACORN", "ACTOR", "ADDER", "ADMIN", "ADULT", "ADZE", "AERIE", "AGATE", "AGAVE", "AGENDA", "AGENT", "ALDER", "ALGAE", "ALIEN", "ALLAH", "ALLEY", "ALLOY", "ALTAR", "AMBER", "AMOUR", "ANGEL", "ANGLE", "ANGLO", "ANIME", "ANION", "ANKLE", "AORTA", "APHID", "APPLE", "APRIL", "APRON", "ARIES", "ARROW", "ARMY", "ASSET", "ATLAS", "ATOLL", "AXIOM", "AXMAN", "AZTEC", "BABOON", "BACON", "BALDY", "BALER", "BALSA", "BAKER", "BANJO", "BARD", "BARDE", "BARGE", "BARRON", "BATCH", "BATON", "BAYOU", "BAZAR", "BEACH", "BEAK", "BEAN", "BEARD", "BEAST", "BEAU", "BEAUT", "BEAUTY", "BEECH", "BEING", "BELLE", "BELLY", "BENCH", "BENNY", "BEZEL", "BIBLE", "BICEP", "BIDDY", "BIDET", "BIGOT", "BIKER", "BILBO", "BILLY", "BIMBO", "BIPED", "BISON", "BITER", "BLADE", "BLAZE", "BLIMP", "BLOB", "BLOCK", "BLOKE", "BLOOD", "BLOOM", "BOAR", "BOARD", "BOBBY", "BOGEY", "BONNIE", "BORAX", "CABAL", "CAMEO", "CANDY", "CANOE", "DADDA", "DADDY", "DAY", "DEMON", "DEVIL", "DIETY", "DJIN", "DJINN", "DRAGON", "EARL", "EGGLER", "ELBOW", "FAERY", "FAIRY", "FELLOW", "GAZER", "GECKO", "GENIE", "GIANT", "HARPY", "HEART", "HELIX", "HOBBIT", "ICHOR", "IDIOT", "IGLOO", "INKER", "JELLY", "JENNY", "JESTER", "JEWEL", "JOKER", "KABOB", "KING", "KITTEN", "KITTY", "KNAVE", "KNIGHT", "LAPIS", "LEMON", "LEMUR", "LETCH", "LICH", "LIVER", "LLAMA", "LOOTER", "LORD", "LORIS", "LOVER", "MA\'AM", "MACAW", "MACER", "MADAM", "MAGIC", "MAJICK", "MAMMY", "MANA", "MANGO", "MANKS", "MANNA", "MANX", "MAPLE", "MASON", "MATCH", "MAVEN", "MELON", "METER", "MIDAS", "MODEL", "MOMMA", "MOMMY", "MOREL", "MOSES", "MULLAH", "NABOB", "NACHO", "NAMER", "NANNY", "NARCO", "NAVE", "NAVY", "NEON", "NERD", "NERVE", "NIGHT", "NOOSE", "NOTCH", "NOTER", "NOVA", "NOVEL", "NOZZLE", "NURSE", "NYMPH", "OBEAH", "OCEAN", "OCTET", "OFFAL", "OKAPI", "OLDIE", "OLEIN", "OLIVE", "OMEGA", "ONION", "OPIUM", "ORACLE", "ORGAN", "ORIEL", "ORION", "OTTER", "OWLET", "OXEYE", "OXFLY", "OXLIP" ];
+var fiveToEightLetterVerbs = [ "AVOWING", "BAKING", "BANGING", "BARFING", "BARKING", "BASHING", "BAWLING", "BEAMING", "BEATING", "BEEPING", "BELTING", "BIFFING", "BIRRING", "BITING", "BLABBING", "BLATTING", "BLOBBING", "BLOWING", "BOLTING", "BONKING", "BOOMING", "BRAGGING", "BRAYING", "BREWING", "BUCKING", "BUMPING", "BUNTING", "BURPING", "BUSTING", "BUZZING", "CALLING", "CASTING", "CHALKING", "CHARRING", "CHATTING", "CHAWING", "CHEWING", "CHIPPING", "CHUGGING", "CITING", "CLAPPING", "CLIPPING", "CLOGGING", "CLOPPING", "CODING", "COIFING", "COMBING", "CONKING", "COOKING", "COPYING", "CRAMMING", "CUFFING", "CUSSING", "DABBING", "DANCING", "DAUBING", "DEALING", "DENTING", "DIALING", "DINGING", "DISHING", "DRAWING", "DRUBBING", "DRUMMING", "DUMPING", "EASING", "ECHOING", "EMITTING", "ETCHING", "FIZZING", "FLAPPING", "FLITTING", "FLOGGING", "FLOPPING", "FLUXING", "FOAMING", "FOLDING", "FORGING", "FORMING", "FRAYING", "FRETTING", "FUNKING", "GASPING", "GIFTING", "GIVING", "GLOWING", "GNASHING", "GNAWING", "GONGING", "GRITTING", "GROWING", "GULPING", "GUSHING", "HACKING", "HAILING", "HALING", "HARKING", "HARPING", "HASHING", "HINTING", "HISSING", "HONKING", "HOOTING", "HOPPING", "HOWLING", "HUFFING", "HUSHING", "INCHING", "JELLING", "JEERING", "JIVING", "JOKING", "JOTTING", "KICKING", "KNITTING", "LASHING", "LEAKING", "LEAPING", "LEERING", "LIPPING", "LISPING", "LISTING", "LOFTING", "LOLLING", "LULLING", "LUMPING", "MAILING", "MARKING", "MASHING", "MAULING", "MEOWING", "MILLING", "MIMING", "MINING", "MINTING", "MOANING", "MOCKING", "MOLDING", "MOPING", "MOSHING", "MOUTHING", "MULLING", "MUSHING", "NAILING", "NAMING", "NICKING", "OINKING", "OOZING", "PANTING", "PEALING", "PECKING", "PEELING", "PEEPING", "PELTING", "PICKING", "PINGING", "PIPING", "PLODDING", "PLOPPING", "PLUCKING", "PLUGGING", "PLUNGING", "POKING", "POURING", "POUTING", "PUFFING", "PUKING", "PUMPING", "PURLING", "PURRING", "PUTTING", "QUIPPING", "RAILING", "RAINING", "RANTING", "RASPING", "RAVING", "RAZZING", "RINGING", "ROARING", "ROCKING", "ROMPING", "SAYING", "SEEPING", "SENDING", "SHARING", "SHINING", "SHOOTING", "SHOUTING", "SHOWING", "SIFTING", "SIGHING", "SIGNING", "SKIDDING", "SKIPPING", "SLAPPING", "SLUGGING", "SLURPING", "SLURRING", "SNAPPING", "SNIPPING", "SNOGGING", "SNUBBING", "SOCKING", "SPAMMING", "SPELLING", "SPEWING", "SPINNING", "SPITTING", "SPURRING", "STABBING", "STEPPING", "STUBBING", "SWATTING", "SWIMMING", "TACKING", "TACKLING", "TALKING", "TAPPING", "TEARING", "TELLING", "TEXTING", "THUDDING", "TICKING", "TILLING", "TINGING", "TOCKING",  "TOLLING", "TONING", "TOOTING", "TOSSING", "TRIMMING", "TROTTING", "TUNING", "TURNING", "TYPING", "URGING", "VENDING", "VOWING", "WAFTING", "WAILING", "WAVING", "WEAVING", "WEEPING", "WELDING", "WELTING", "WHIPPING", "WHIRRING", "WHIZZING", "WHOOPING", "WHOPPING", "WILLING", "WINKING",  "WIRING", "WISHING", "WRITING", "YACKING", "YANKING", "YAWNING", "YELLING", "YELPING"];
+var threeToSevenLetterPositive = ["AMEN", "AYE", "CHEER", "EXACTLY", "FINE", "GLADLY", "HOORAY", "INDEED", "OKAY", "SURELY", "TRUE", "WIN", "YAAAS", "YAY", "YEA", "YEAH", "YEP", "YESSIR", "YUP", "YES"];
+var threeToSevenLetterNegative = ["BOO", "CURSED", "DANG", "DARN", "DRAT", "GLUM", "HATEFUL", "NAY", "NEVER", "NIX", "NO WAY", "NOPE", "ODIOUS", "OUCH", "POOH", "SAD", "SHUCKS", "UH-UH", "NO"];
+var threeToSevenLetterNeutral = ["BLURRED", "BLURRY", "CLOUDY", "DUNNO", "ELUSIVE", "FOGGY", "FUZZY", "GAUZY", "HAZY", "IFFY", "MAYBE", "NOT SURE", "OBSCURE", "OPAQUE", "SMEARED", "SMOGGY", "SMOKY", "SOUPY", "UHHH?", "UNCLEAR", "UNSURE", "VAGUE", "VEILED", "WOBBLY", "PERHAPS"];
+
+//Obtain dimensions from canvas size, so it can adjust to screen/browser on startup
+var canvasCenter = width/2;
+var mainBallSize = (width * 0.7625);
+var purpleLiquidSize = (width * 0.445);
+var mainWhiteCircleY = (height * 0.1875);
+var mainWhiteCircleWidth = (width * 0.245);
+var mainWhiteCircleHeight = (height * 0.1175);
+var main8X = (width * 0.465);
+var main8Y = (height * 0.2175);
+
+var miniBallCenterX = (width * 0.93);
+var miniBallCenterY = (height * 0.863);
+var miniBallSize = (width * 0.045);
+var miniWhiteCircleSize = (width * 0.03);
+var mini8X = (width * 0.925);
+var mini8Y = (height * 0.871);
+
+var triangleTopPeakY = (height * 0.3075);
+var triangleBottomRightCornerX = (width * 0.6775);
+var triangleBottomCornersY = (height * 0.62);
+var triangleBottomLeftCornerX = (width * 0.3225);
+
+var askButtonX = (width * 0.75);
+var askButtonY = (height * 0.793);
+var askButtonWidth = (width * 0.2175);
+var askButtonHeight = (height * 0.125);
+var askTextX = (width * 0.7825);
+var askTextY = (height * 0.88);
+var askRightEdge = (askButtonX + askButtonWidth);
+var askBottomEdge = (askButtonY + askButtonHeight);
+
+var textAX = (width * 0.46);
+var textAY = (height * 0.4625);
+var textBX = (width * 0.4075);
+var textBY = (height * 0.505);
+var textCX = (width * 0.385);
+var textCY = (height * 0.5475);
+var textDX = (width * 0.36);
+var textDY = (height * 0.59);
+
+var numX = (width * 0.02);
+var numY = (height  * 0.791);
+var numWidth = (width * 0.475);
+var numHeight = (height * 0.21);
+var numRightEdge = (numX + numWidth);
+//var numBottomEdge = (numY + numHeight); same as "height"
+
+var strokeWeight12 = round(width * 0.03);
+var strokeWeight10 = round(width * 0.025);
+var strokeWeight8 = round(width * 0.02);
+var strokeWeight5 = round(width * 0.0125);
+var strokeWeight4 = round(width * 0.01);
+var strokeWeight2 = round(width * 0.005);
+
+//Global variables used in animations
+var colorShift = 0;
+var increaseColor = true;
+var magicSparks = false;
+var fadeInAnswer = false;
+var alphaAnswer = 0;
+var sparkDistance = 0;
+var sparkSizeA = 3;
+var sparkSizeB = 3;
+var sparkSizeC = 3;
+var sparkSizeD = 3;
+var sparkDistanceModifier = round(width * 0.0025);
+var glowing8X = (width * 0.4625);
+var glowing8Y = (height * 0.22);
+var coverOpacity = 255;
+
+
+//Background
+var START_BG_RED = 111;
+var START_BG_GREEN = 22;
+var START_BG_BLUE = 31;
+var bgRed = START_BG_RED;
+var bgGreen = START_BG_GREEN;
+var bgBlue = START_BG_BLUE;
+
+
+//Defining an upper limit on # of answers
+var UPPER_LIMIT = 65;
+var answer = UPPER_LIMIT;
+
+
+//Making sure the text answers have a standard size
+//and appearance with a monospace font
+var fontMono = createFont("monospace");
+
+
+//Since there is no direct pixel size to font
+//size relation, this is what I use for scaling
+//monotype text to larger or smaller sizes.
+var scaleTextSize = function (originalSize){
+    var newTextSize = (originalSize * (6/14)) / 400;
+    newTextSize = ((newTextSize * width) * (14/6));
+    return newTextSize;
+};
+
+
+var storedAnswerTriangle = {
+    triangleColor: color(5, 50, 250),
+    textColor: color(255),
+    sizeForText: scaleTextSize(11),
+    messageLineA: "THINK",
+    messageLineB: "OF A YES OR",
+    messageLineC: " NO QUESTION,",
+    messageLineD: "  THEN ASK ME!!"
+};
+
+//Scaling text sizes for 8 Ball and Buttons
+var askTextSize = scaleTextSize(25);
+var big8TextSize = scaleTextSize(39);
+var mini8TextSize = scaleTextSize(7);
+var revealTextSize = scaleTextSize(14);
+
+//Draw the triangle inside the 8-Ball using this function
+//tri is the incoming answer triangle parts.
+var drawTriangle = function(tri){
+    fill(tri.triangleColor);
+    triangle(canvasCenter, triangleTopPeakY, triangleBottomRightCornerX, triangleBottomCornersY, triangleBottomLeftCornerX, triangleBottomCornersY);
+    fill(tri.textColor);
+    textSize(tri.sizeForText);
+    text(tri.messageLineA, textAX, textAY);
+    text(tri.messageLineB, textBX, textBY);
+    text(tri.messageLineC, textCX, textCY);
+    text(tri.messageLineD, textDX, textDY);
+};
+
+var generateRandomPositive = function(){
+    
+    storedAnswerTriangle = {
+        triangleColor: color(0, 92, 12),
+        textColor: color(255, 217, 0),
+        sizeForText: scaleTextSize(13),
+        messageLineA: singleIdentifiers[floor(random(0, singleIdentifiers.length))],
+        messageLineB: threeLetterPositiveAdjectives[floor(random(0, threeLetterPositiveAdjectives.length))] + " " +         fourToSixLetterSingleSubjects[floor(random(0, fourToSixLetterSingleSubjects.length))],
+        messageLineC: "IS " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToSevenLetterPositive[floor(random(0, threeToSevenLetterPositive.length))] + "!!!"
+    };
+    
+    //Change A to AN for vowel adjectives
+    if(storedAnswerTriangle.messageLineA[1] === 'A'){
+        switch(storedAnswerTriangle.messageLineB[0]){
+            case 'A':
+            case 'E':
+            case 'I':
+            case 'O':
+            case 'U':
+                storedAnswerTriangle.messageLineA = "AN";
+            break;
+        }
+    }
+    
+};
+
+var generateRandomNegative = function(){
+    
+    storedAnswerTriangle = {
+        triangleColor: color(255, 0, 0),
+        textColor: color(0),
+        sizeForText: scaleTextSize(13),
+        messageLineA: singleIdentifiers[floor(random(0, singleIdentifiers.length))],
+        messageLineB: threeLetterNegativeAdjectives[floor(random(0, threeLetterNegativeAdjectives.length))] + " " +         fourToSixLetterSingleSubjects[floor(random(0, fourToSixLetterSingleSubjects.length))],
+        messageLineC: "IS " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToSevenLetterNegative[floor(random(0, threeToSevenLetterNegative.length))] + "!!!"
+    };
+    
+    //Change A to AN for vowel adjectives
+    if(storedAnswerTriangle.messageLineA[1] === 'A'){
+        switch(storedAnswerTriangle.messageLineB[0]){
+            case 'A':
+            case 'E':
+            case 'I':
+            case 'O':
+            case 'U':
+                storedAnswerTriangle.messageLineA = "AN";
+            break;
+        }
+    }
+    
+};
+
+var generateRandomNeutral = function(){
+    
+    storedAnswerTriangle = {
+        triangleColor: color(247, 255, 0),
+        textColor: color(128, 107, 3),
+        sizeForText: scaleTextSize(13),
+        messageLineA: singleIdentifiers[floor(random(0, singleIdentifiers.length))],
+        messageLineB: threeLetterAdjectives[floor(random(0, threeLetterAdjectives.length))] + " " + fourToSixLetterSingleSubjects[floor(random(0, fourToSixLetterSingleSubjects.length))],
+        messageLineC: "IS " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToSevenLetterNeutral[floor(random(0, threeToSevenLetterPositive.length))] + "."
+    };
+    
+    //Change A to AN for vowel adjectives
+    if(storedAnswerTriangle.messageLineA[1] === 'A'){
+        switch(storedAnswerTriangle.messageLineB[0]){
+            case 'A':
+            case 'E':
+            case 'I':
+            case 'O':
+            case 'U':
+                storedAnswerTriangle.messageLineA = "AN";
+            break;
+        }
+    }
+    
+};
+
+//Generate a random number out of UPPER_LIMIT
+//number of possible values.
+var ask8Ball = function(){
+    answer = floor(random(0, UPPER_LIMIT));
+    
+    //Store answers depending on what random number
+    //was assigned to the "answer" variable
+    //Using switch instead of if/else - more concise.
+    switch(answer){
+         case 0:
+            storedAnswerTriangle = {
+                triangleColor: color(255, 247, 0),
+                textColor: color(0),
+                sizeForText: scaleTextSize(13),
+                messageLineA: "THE",
+                messageLineB: "BUZZING",
+                messageLineC: "BEHIVE HAS",
+                messageLineD: "  TOLD ME YES!"
+            };
+        break;
+        case 1:
+            storedAnswerTriangle = {
+                triangleColor: color(0, 189, 13),
+                textColor: color(255),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "YES!",
+                messageLineB: "CERTAINLY"
+            };
+        break;
+        case 2:
+            storedAnswerTriangle = {
+                triangleColor: color(161, 0, 0),
+                textColor: color(255, 247, 0),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "NO,",
+                messageLineB: "IT WILL",
+                messageLineC: "NOT HAPPEN!",
+            };
+        break;
+        case 3:
+            storedAnswerTriangle = {
+                triangleColor: color(87, 86, 83),
+                textColor: color(255),
+                sizeForText: scaleTextSize(16),
+                messageLineA: "",
+                messageLineB: " MAYBE,",
+                messageLineC: "  ANSWER",
+                messageLineD: " IS UNCLEAR"
+            };
+        break;
+        case 4:
+            storedAnswerTriangle = {
+                triangleColor: color(201, 0, 184),
+                textColor: color(255),
+                sizeForText: scaleTextSize(11),
+                messageLineA: "YOU",
+                messageLineB: "ARE STRUCK",
+                messageLineC: "BY SOMETHING",
+                messageLineD: "FLUFFY AND SOFT!"
+            };
+        break;
+        case 5:
+            storedAnswerTriangle = {
+                triangleColor: color(252, 185, 41),
+                textColor: color(59, 55, 13),
+                sizeForText: scaleTextSize(17),
+                messageLineA: "",
+                messageLineB: "ANSWER",
+                messageLineC: "HAZY: TRY",
+                messageLineD: "AGAIN LATER."
+            };
+        break;
+        case 6:
+            storedAnswerTriangle = {
+                triangleColor: color(255, 242, 0),
+                textColor: color(0),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "YES,",
+                messageLineB: "OF THIS I",
+                messageLineC: "AM CERTAIN!",
+            };
+        break;
+        case 7:
+            storedAnswerTriangle = {
+                triangleColor: color(255, 0, 30),
+                textColor: color(255, 236, 94),
+                sizeForText: scaleTextSize(16),
+                messageLineA: "YOU",
+                messageLineB: "ALREADY",
+                messageLineC: " KNOW THE",
+                messageLineD: "   ANSWER..."
+            };
+        break;
+        case 8:
+            storedAnswerTriangle = {
+                triangleColor: color(23, 22, 15),
+                textColor: color(222, 33, 206),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "NOT",
+                messageLineB: "  WORTH ",
+                messageLineC: "  YOUR TIME",
+                messageLineD: "  OR EFFORTS!"
+            };
+        break;
+        case 9:
+            storedAnswerTriangle = {
+                triangleColor: color(0, 255, 208),
+                textColor: color(0, 8, 94),
+                sizeForText: scaleTextSize(14),
+                messageLineA: " IT",
+                messageLineB: "SOUNDS",
+                messageLineC: "GOOD, BUT",
+                messageLineD: "DOESN'T WORK."
+            };
+        break;
+        case 10:
+            storedAnswerTriangle = {
+                triangleColor: color(238, 133, 245),
+                textColor: color(196, 6, 6),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "YOU",
+                messageLineB: " REALLY",
+                messageLineC: " WEAR THAT",
+                messageLineD: "OUTFIT WELL!"
+            };
+        break;
+        case 11:
+            storedAnswerTriangle = {
+                triangleColor: color(170),
+                textColor: color(10),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "I",
+                messageLineB: "HATE TO",
+                messageLineC: "BEAR BAD",
+                messageLineD: "NEWS, BUT.. NO"
+            };
+        break;
+        case 12:
+            storedAnswerTriangle = {
+                triangleColor: color(156, 165, 166),
+                textColor: color(138, 255, 198),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "THE",
+                messageLineB: "SPIRIT IS",
+                messageLineC: "WHISPERING",
+                messageLineD: "  \"STAY HOME\""
+            };
+        break;
+        case 13:
+            storedAnswerTriangle = {
+                triangleColor: color(64, 117, 0),
+                textColor: color(17, 61, 15),
+                sizeForText: scaleTextSize(21),
+                messageLineA: "THE",
+                messageLineB: " TEA",
+                messageLineC: " LEAVES",
+                messageLineD: "SAY YES!!"
+            };
+        break;
+        case 14:
+            storedAnswerTriangle = {
+                triangleColor: color(0, 227, 201),
+                textColor: color(0),
+                sizeForText: scaleTextSize(21),
+                messageLineA: "ALL",
+                messageLineB: "SIGNS",
+                messageLineC: " POINT",
+                messageLineD: " TO YES."
+            };
+        break;
+        case 15:
+            storedAnswerTriangle = {
+                triangleColor: color(0),
+                textColor: color(214, 248, 255),
+                sizeForText: scaleTextSize(15),
+                messageLineA: "TOO",
+                messageLineB: "  MUCH",
+                messageLineC: " ELECTRIC",
+                messageLineD: "INTERFERENCE!"
+            };
+        break;
+        case 16:
+            storedAnswerTriangle = {
+                triangleColor: color(255),
+                textColor: color(117, 117, 0),
+                sizeForText: scaleTextSize(15),
+                messageLineA: "AN",
+                messageLineB: "ANGEL IS",
+                messageLineC: " BLESSING",
+                messageLineD: " YOU, YES!!"
+            };
+        break;
+        case 17:
+            storedAnswerTriangle = {
+                triangleColor: color(0),
+                textColor: color(150),
+                sizeForText: scaleTextSize(17),
+                messageLineA: "",
+                messageLineB: "  AS",
+                messageLineC: "THE CROW",
+                messageLineD: "FLIES, YES!"
+            };
+        break;
+        case 18:
+            storedAnswerTriangle = {
+                triangleColor: color(9, 140, 4),
+                textColor: color(126, 255, 122),
+                sizeForText: scaleTextSize(16),
+                messageLineA: "",
+                messageLineB: " LUCKY",
+                messageLineC: " YOU!!!!",
+                messageLineD: "ABSOLUTELY!",
+            };
+        break;
+        case 19:
+            storedAnswerTriangle = {
+                triangleColor: color(138, 4, 4),
+                textColor: color(255),
+                sizeForText: scaleTextSize(20),
+                messageLineA: "YOU",
+                messageLineB: " SMELL",
+                messageLineC: " GREAT",
+                messageLineD: " TODAY!!"
+            };
+        break;
+        case 20:
+            storedAnswerTriangle = {
+                triangleColor: color(71, 43, 0),
+                textColor: color(194, 154, 54),
+                sizeForText: scaleTextSize(18),
+                messageLineA: "IT'S",
+                messageLineB: "CARVED",
+                messageLineC: " IN THE",
+                messageLineD: " WOOD, YES."
+            };
+        break;
+        case 21:
+            storedAnswerTriangle = {
+                triangleColor: color(92, 0, 0),
+                textColor: color(255, 174, 0),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "THE",
+                messageLineB: " FLAME IS",
+                messageLineC: "LIT, BUT IT",
+                messageLineD: " NEEDS FANNING"
+            };
+        break;
+        case 22:
+            storedAnswerTriangle = {
+                triangleColor: color(5, 46, 0),
+                textColor: color(207, 206, 203),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "IT'S",
+                messageLineB: " NAILS ON",
+                messageLineC: "A CHALKBOARD",
+                messageLineD: "  NO! STOP!!!"
+            };
+        break;
+        case 23:
+            storedAnswerTriangle = {
+                triangleColor: color(0, 148, 113),
+                textColor: color(0, 11, 45),
+                sizeForText: scaleTextSize(13),
+                messageLineA: "THE",
+                messageLineB: "WEST WIND",
+                messageLineC: " IS HOWLING",
+                messageLineD: "  AGAINST IT!!"
+            };
+        break;
+        case 24:
+            storedAnswerTriangle = {
+                triangleColor: color(43, 36, 3),
+                textColor: color(139, 240, 215),
+                sizeForText: scaleTextSize(13),
+                messageLineA: "YES,",
+                messageLineB: "BUT ONLY",
+                messageLineC: "AFTER STRONG",
+                messageLineD: " BLACK COFFEE!"
+            };
+        break;
+        case 25:
+            storedAnswerTriangle = {
+                triangleColor: color(189, 169, 79),
+                textColor: color(0),
+                sizeForText: scaleTextSize(16),
+                messageLineA: " DO",
+                messageLineB: " HOBBITS",
+                messageLineC: "HAVE HAIRY",
+                messageLineD: "    FEET?"
+            };
+        break;
+        case 26:
+            storedAnswerTriangle = {
+                triangleColor: color(199, 0, 10),
+                textColor: color(248, 156, 255),
+                sizeForText: scaleTextSize(15),
+                messageLineA: "THE",
+                messageLineB: "WAY YOUR",
+                messageLineC: "HAIR FALLS",
+                messageLineD: " IS PERFECT!"
+            };
+        break;
+        case 27:
+            storedAnswerTriangle = {
+                triangleColor: color(110, 234, 245),
+                textColor: color(8, 43, 0),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "ON",
+                messageLineB: " A SCALE",
+                messageLineC: " FROM 1 TO",
+                messageLineD: "10, YOU'RE 11!"
+            };
+        break;
+        case 28:
+            storedAnswerTriangle = {
+                triangleColor: color(219, 168, 0),
+                textColor: color(71, 9, 121),
+                sizeForText: scaleTextSize(11),
+                messageLineA: "YOU",
+                messageLineB: "ARE REALLY",
+                messageLineC: " RIDICULOUSLY",
+                messageLineD: "  GOOD LOOKING!"
+            };
+        break;
+        case 29:
+            storedAnswerTriangle = {
+                triangleColor: color(133, 111, 40),
+                textColor: color(0),
+                sizeForText: scaleTextSize(17),
+                messageLineA: " I",
+                messageLineB: "  CAST",
+                messageLineC: "THE RUNES",
+                messageLineD: " AND... NO!"
+            };
+        break;
+        case 30:
+            storedAnswerTriangle = {
+                triangleColor: color(133, 111, 40),
+                textColor: color(0),
+                sizeForText: scaleTextSize(17),
+                messageLineA: " I",
+                messageLineB: "  CAST",
+                messageLineC: "THE RUNES",
+                messageLineD: "AND... YES!"
+            };
+        break;
+        case 31:
+            storedAnswerTriangle = {
+                triangleColor: color(217, 0, 0),
+                textColor: color(189),
+                sizeForText: scaleTextSize(15),
+                messageLineA: "THE",
+                messageLineB: " BRICKS",
+                messageLineC: "OF SUPPORT",
+                messageLineD: " CRUMBLE! NO."
+            };
+        break;
+        case 32:
+            storedAnswerTriangle = {
+                triangleColor: color(217, 0, 0),
+                textColor: color(189),
+                sizeForText: scaleTextSize(15),
+                messageLineA: "THE",
+                messageLineB: " BRICKS",
+                messageLineC: "OF SUPPORT",
+                messageLineD: " STAND. YES!"
+            };
+        break;
+        case 33:
+            storedAnswerTriangle = {
+                triangleColor: color(7, 28, 11),
+                textColor: color(130),
+                sizeForText: scaleTextSize(17),
+                messageLineA: "DO",
+                messageLineB: "NOT TOY",
+                messageLineC: "WITH THAT",
+                messageLineD: "IDEA, EVER."
+            };
+        break;
+        case 34:
+            storedAnswerTriangle = {
+                triangleColor: color(207, 185, 131),
+                textColor: color(156, 22, 22),
+                sizeForText: scaleTextSize(15),
+                messageLineA: "THE",
+                messageLineB: "CHICKEN",
+                messageLineC: "PECKS OUT",
+                messageLineD: "   A \"NO\""
+            };
+        break;
+        case 35:
+            storedAnswerTriangle = {
+                triangleColor: color(207, 185, 131),
+                textColor: color(156, 22, 22),
+                sizeForText: scaleTextSize(15),
+                messageLineA: "THE",
+                messageLineB: "CHICKEN",
+                messageLineC: "FLAPS ITS",
+                messageLineD: " WINGS \"YES\""
+            };
+        break;
+        case 36:
+            storedAnswerTriangle = {
+                triangleColor: color(132, 188, 207),
+                textColor: color(0, 12, 102),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "THE",
+                messageLineB: " CRYSTAL",
+                messageLineC: " BALL FORE-",
+                messageLineD: "SEES HAPPINESS."
+            };
+        break;
+        case 37:
+            storedAnswerTriangle = {
+                triangleColor: color(132, 188, 207),
+                textColor: color(0, 12, 102),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "THE",
+                messageLineB: " CRYSTAL",
+                messageLineC: " BALL FORE-",
+                messageLineD: " SEES SORROW."
+            };
+        break;
+        case 38:
+            storedAnswerTriangle = {
+                triangleColor: color(189, 145, 0),
+                textColor: color(16, 97, 16),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "THE",
+                messageLineB: "  OOMPA",
+                messageLineC: "LOOMPAS WILL",
+                messageLineD: "   JUICE YOU."
+            };
+        break;
+        case 39:
+            storedAnswerTriangle = {
+                triangleColor: color(230, 194, 74),
+                textColor: color(64, 33, 0),
+                sizeForText: scaleTextSize(14),
+                messageLineA: "SAYTH",
+                messageLineB: " FLYING",
+                messageLineC: " SPAGHETTI",
+                messageLineD: "MONSTER: \"YEA\""
+            };
+        break;
+        case 40:
+            storedAnswerTriangle = {
+                triangleColor: color(112, 76, 255),
+                textColor: color(2, 56, 0),
+                sizeForText: scaleTextSize(18),
+                messageLineA: "A",
+                messageLineB: "CHANGE",
+                messageLineC: "OCCURRED",
+                messageLineD: "FOR GOOD!!"
+            };
+        break;
+        case 41:
+            storedAnswerTriangle = {
+                triangleColor: color(18, 0, 92),
+                textColor: color(119, 255, 112),
+                sizeForText: scaleTextSize(13),
+                messageLineA: "THE",
+                messageLineB: "FATES ARE",
+                messageLineC: " WEAVING A",
+                messageLineD: "\"YES\" FOR YOU."
+            };
+        break;
+        case 42:
+            storedAnswerTriangle = {
+                triangleColor: color(18, 0, 92),
+                textColor: color(119, 255, 112),
+                sizeForText: scaleTextSize(13),
+                messageLineA: "THE",
+                messageLineB: "FATES ARE",
+                messageLineC: "CUTTING THE",
+                messageLineD: "THREAD, SO NO."
+            };
+        break;
+        case 43:
+            storedAnswerTriangle = {
+                triangleColor: color(27, 168, 168),
+                textColor: color(255, 207, 102),
+                sizeForText: scaleTextSize(13),
+                messageLineA: "THE",
+                messageLineB: "SOUTHERN",
+                messageLineC: "BREEZE GIVES",
+                messageLineD: "YOU A WARM YES."
+            };
+        break;
+        case 44:
+            storedAnswerTriangle = {
+                triangleColor: color(0, 9, 255),
+                textColor: color(255),
+                sizeForText: scaleTextSize(15),
+                messageLineA: "YOU",
+                messageLineB: "ARE ABLE",
+                messageLineC: "  TO STAY",
+                messageLineD: "HEALTHY! YES."
+            };
+        break;
+        case 45:
+            storedAnswerTriangle = {
+                triangleColor: color(255),
+                textColor: color(0),
+                sizeForText: scaleTextSize(13),
+                messageLineA: " BY",
+                messageLineB: " THE SKIN",
+                messageLineC: "   OF YOUR",
+                messageLineD: "TEETH, BUT YES."
+            };
+        break;
+        case 46:
+            storedAnswerTriangle = {
+                triangleColor: color(255, 76, 76),
+                textColor: color(0, 18, 79),
+                sizeForText: scaleTextSize(18),
+                messageLineA: " A",
+                messageLineB: " GIANT",
+                messageLineC: " STANDS",
+                messageLineD: "IN THE WAY."
+            };
+        break;
+        case 47:
+            storedAnswerTriangle = {
+                triangleColor: color(214, 196, 0),
+                textColor: color(0),
+                sizeForText: scaleTextSize(15),
+                messageLineA: "IT'S",
+                messageLineB: " A DEAD",
+                messageLineC: " END, SO",
+                messageLineD: "MAKE A PATH!"
+            };
+            //drawTriangle(color(214, 196, 0), color(0), scaleTextSize(15),  "IT'S", " A DEAD", " END, SO", "MAKE A PATH!");
+        break;
+        case 48:
+            storedAnswerTriangle = {
+                triangleColor: color(255, 171, 69),
+                textColor: color(0, 0, 0),
+                sizeForText: scaleTextSize(17),
+                messageLineA: "DA",
+                messageLineB: "HAST DU",
+                messageLineC: "RECHT! JA",
+                messageLineD: "   WOLL!"
+            };
+            //drawTriangle(color(255, 145, 0), color(54, 0, 0), scaleTextSize(17),  "DA", "HAST DU", "RECHT! JA", "   WOLL!");
+        break;
+        case 49:
+            storedAnswerTriangle = {
+                triangleColor: color(255, 145, 0),
+                textColor: color(54, 0, 0),
+                sizeForText: scaleTextSize(15),
+                messageLineA: "THE",
+                messageLineB: "WORM HAS",
+                messageLineC: "  TURNED",
+                messageLineD: "AGAINST YOU."
+            };
+            //drawTriangle(color(255, 145, 0), color(54, 0, 0), scaleTextSize(15),  "THE", "WORM HAS", "  TURNED", "AGAINST YOU.");
+        break;
+        //BUILD A POSITIVE ANSWER
+        //Word size, spacing: 4-5, 9, 12, 14
+        case 50:
+        case 51:
+        case 52:
+        case 53:
+        case 54:
+            generateRandomPositive();
+        break;
+        case 55:
+        case 56:
+        case 57:
+        case 58:
+        case 59:
+            generateRandomNegative();
+        break;
+        case 60:
+        case 61:
+        case 62:
+        case 63:
+        case 64:
+            generateRandomNeutral();
+        break;
+        //
+        /***** TEMPLATE, KEEP AT END TO ADD MORE ANSWERS EASILY *****
+        case 40:
+            drawTriangle(color(112, 76, 255), color(2, 56, 0), scaleTextSize(13),  "", "", "", "");
+        break;
+        */
+        default: //Impossible answer to start
+            drawTriangle(color(5, 50, 250), color(255), scaleTextSize(11), "THINK", "OF A YES OR", " NO QUESTION,", "  THEN ASK ME!!");
+        
+    }
+};
+
+draw = function() {
+    
+    
+    //Background fading out
+    if (magicSparks && bgRed > 0){
+        bgRed -= 3;
+    }
+    if (magicSparks && bgGreen > 0){
+        bgGreen -= 3;
+    }
+    if (magicSparks && bgBlue > 0){
+        bgBlue -= 3;
+    }
+    
+    //Background fading in
+    if (!magicSparks && bgRed < START_BG_RED) {
+        bgRed++;
+    }
+    if (!magicSparks && bgGreen < START_BG_GREEN) {
+        bgGreen++;
+    }
+    if (!magicSparks && bgBlue < START_BG_BLUE) {
+        bgBlue++;
+    }
+    
+    background(bgRed, bgGreen, bgBlue);
+    
+    
+    textFont(fontMono, 20); //Make a default text
+    
+    //Draw the 8-Ball
+    fill(0);
+    ellipse(canvasCenter, canvasCenter, mainBallSize, mainBallSize);
+    
+    //Purple liquid
+    fill(45, 0, 82);
+    ellipse(canvasCenter, canvasCenter, purpleLiquidSize, purpleLiquidSize);
+    
+    //8 Ball label
+    fill("white");
+    ellipse(canvasCenter, mainWhiteCircleY, mainWhiteCircleWidth, mainWhiteCircleHeight);
+    fill(0);
+    textSize(big8TextSize);
+    text("8", main8X, main8Y);
+    
+    //Asking Button
+    strokeWeight(strokeWeight4);
+    stroke(0);
+    
+    //Cycle Ask button between dark and light blue
+    if( colorShift >= 80 && increaseColor){
+        increaseColor = false;
+    } else if(increaseColor && colorShift <=80){
+        colorShift = colorShift + 1;
+    } else if (colorShift >= 0 && !increaseColor){
+        colorShift--;
+    } else { //colorShift has dropped below 0
+        increaseColor = true;
+    }
+    fill((0 + colorShift), (0 + colorShift), (70 + colorShift));
+        rect(askButtonX, askButtonY, askButtonWidth, askButtonHeight, strokeWeight4);
+    fill(255, 255, 255);
+    textSize(askTextSize);
+    text("Ask", askTextX, askTextY);
+    
+    //Draw mini 8 Ball
+    strokeWeight(0);
+    fill(0);
+    ellipse(miniBallCenterX, miniBallCenterY, miniBallSize, miniBallSize);
+    fill(255);
+    ellipse(miniBallCenterX, miniBallCenterY, miniWhiteCircleSize, miniWhiteCircleSize);
+    fill(0);
+    textSize(mini8TextSize);
+    text("8", mini8X, mini8Y);
+    strokeWeight(strokeWeight2);
+    
+    //Reveal amount of possible answers
+    textSize(revealTextSize);
+    if(fadeInAnswer) {
+        alphaAnswer += 2;
+    } else {
+        alphaAnswer = 0;
+    }
+    fill(242, 255, 0, alphaAnswer);
+    text("The 8 Ball has: 50 + \n(((" +
+    threeLetterPositiveAdjectives.length + "^" + fourToSixLetterSingleSubjects.length + ")^" + fiveToEightLetterVerbs.length + ")^" + threeToSevenLetterPositive.length  + ") +\n" +
+    "(((" + threeLetterNegativeAdjectives.length + "^" + fourToSixLetterSingleSubjects.length + ")^" + fiveToEightLetterVerbs.length + ")^" + threeToSevenLetterNegative.length  + ") +\n" +
+    "(((" + (threeLetterAdjectives.length) + "^" + fourToSixLetterSingleSubjects.length + ")^" + fiveToEightLetterVerbs.length + ")^" + threeToSevenLetterNeutral.length  + ")\n" +
+"possible answers.", numX, numY, numWidth, numHeight);
+    
+    drawTriangle(storedAnswerTriangle);
+    
+    var tempTriangle = {
+            triangleColor: color(45, 0, 82, coverOpacity)
+    };
+    
+    if(magicSparks && sparkDistance < 85){
+        strokeWeight(random(strokeWeight4, strokeWeight12));
+        stroke(color(45, 0, 82, 220));
+        drawTriangle(tempTriangle);
+        fill(255, 0, 242);
+        ellipse(canvasCenter, canvasCenter + sparkDistance, sparkSizeA, sparkSizeA);
+        ellipse(canvasCenter + sparkDistance, canvasCenter, sparkSizeC, sparkSizeC);
+        ellipse(canvasCenter + (sparkDistance/1.7), canvasCenter + (sparkDistance/1.7), sparkSizeB, sparkSizeB);
+        ellipse(canvasCenter + (sparkDistance/1.7), canvasCenter - (sparkDistance/1.7), sparkSizeD, sparkSizeD);
+        ellipse(canvasCenter - (sparkDistance/1.7), canvasCenter + (sparkDistance/1.7), sparkSizeD, sparkSizeD);
+        ellipse(canvasCenter - (sparkDistance/1.7), canvasCenter - (sparkDistance/1.7), sparkSizeB, sparkSizeB);
+        ellipse(canvasCenter - sparkDistance, canvasCenter, sparkSizeC, sparkSizeC);
+        ellipse(canvasCenter, canvasCenter - sparkDistance, sparkSizeA, sparkSizeA);
+        sparkSizeA = floor(random(1, strokeWeight8));
+        sparkSizeB = floor(random(1, strokeWeight12));
+        sparkSizeC = floor(random(1, strokeWeight10));
+        sparkSizeD = floor(random(1, strokeWeight5));
+        sparkDistance += sparkDistanceModifier;
+        coverOpacity -= 1;
+        textSize(big8TextSize + sparkSizeD);
+        fill(150, 0, 230);
+        text("8", glowing8X, glowing8Y);
+    } else {
+        sparkDistance =0;
+        coverOpacity = 255;
+        magicSparks = false;
+        stroke(0);
+    }
+
+};
+
+mouseClicked = function(){
+    //Check for Clicking of Ask Button
+    if ((mouseX >= askButtonX && mouseX <askRightEdge) && (mouseY >= askButtonY && mouseY <= askBottomEdge)){
+        ask8Ball();
+        magicSparks = true;
+    }
+    
+    //Check for revealing amount of answers
+    if ((mouseX >= numX && mouseX <numRightEdge) && (mouseY >= numY && mouseY <= height)){
+        fadeInAnswer  = true;
+    } else {
+        fadeInAnswer = false;
+    }
+};
+ }};
+    // Get the canvas that Processing-js will use
+    var canvas = document.getElementById("mycanvas"); 
+    // Pass the function sketchProc (defined in myCode.js) to Processing's constructor.
+    var processingInstance = new Processing(canvas, sketchProc); 
+ </script>
+
+</html>
