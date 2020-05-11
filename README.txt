@@ -6,10 +6,38 @@ My goals are:
 -Make the entire website navigatable with a constant <div> of buttons at the top
 -Make the entire website change themes to show a variety of CSS options
 
-As of 3/15/2020, I have just a few html files up and running, I will include the header comments of my code here:
+As of 5/10/2020, I have just a few html files up and running, I will include the header comments of my code here:
 
 Key:- means subtraction/deletion from code
 	+ means addition of code/functionality
+
+/*****************
+* Created by MagicTheGavining
+* Resizable version: https://magicthegavining.github.io/InsaneInfinity.html
+* May 9 and 10, 2020
+* +Generates "infinity" amount of answers
+* (According to Google's calculator)
+* +Added word lists to generate
+*  "Mad Libs" answers
+* -Changed some of the answers
+* +Font scaling function that
+*  mostly works!!!
+* +Scaling of all drawn parts to
+*  different canvas sizes!  Ach! 
+*  just 121 more lines of code!!!
+*  (mostly global variables)
+* +Reveal number of possible
+*  answers when lower left is clicked
+* +Infused with purple spirit power!
+* +Switch Statement to replace if/else
+* +Different Colored triangles
+* +Function to draw triangle
+* +∞ Symbol Added
+* +Purple liquid behind triangle
+* +Ask button and instructions
+* +Color changing button
+* +Sparks on new answer
+*****************/
 
 CartoonFishTank.html
 /**********************************
