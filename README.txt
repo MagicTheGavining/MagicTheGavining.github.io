@@ -11,6 +11,7 @@ As of 5/10/2020, I have just a few html files up and running, I will include the
 Key:- means subtraction/deletion from code
 	+ means addition of code/functionality
 
+InsaneInfinity.html
 /*****************
 * Created by MagicTheGavining
 * Resizable version: https://magicthegavining.github.io/InsaneInfinity.html
