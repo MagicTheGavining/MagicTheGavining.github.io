@@ -15,22 +15,16 @@ InsaneInfinity.html
 /*****************
 * Created by MagicTheGavining
 * Resizable version: https://magicthegavining.github.io/InsaneInfinity.html
-* May 9 and 10, 2020
+* May 9, 10, 16, & 17 2020
 * +Generates "infinity" amount of answers
 * (According to Google's calculator)
 * +Added word lists to generate
 *  "Mad Libs" answers
-* -Changed some of the answers
 * +Font scaling function that
 *  mostly works!!!
-* +Scaling of all drawn parts to
-*  different canvas sizes!  Ach! 
-*  just 121 more lines of code!!!
-*  (mostly global variables)
-* +Reveal number of possible
-*  answers when lower left is clicked
+* -Racial adjectives
 * +Infused with purple spirit power!
-* +Switch Statement to replace if/else
+* +If/Else statements using weighted ranges
 * +Different Colored triangles
 * +Function to draw triangle
 * +∞ Symbol Added
