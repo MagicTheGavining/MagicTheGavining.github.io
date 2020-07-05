@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!-- Created by Gavin Attoe
+ Father Dongus Time by Dan Attoe
+ Programming dates July 5, 2020-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Dongus Floater</title>
+        <style>
+        #innergalactic {
+            position: absolute;
+            top: 8%;
+            left: 25%;
+			height: 75%;
+            z-index: 4;
+        }
+        
+            
+        </style>
+    </head>
+    <body>
+
+    <img src="images/creatures/InnerGalactic.gif" id="innergalactic">
+
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+   
+   <!--Need jQuery's UI library for drag-and-drop -->
+   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+   
+    <script>
+		//TODO: 
+		//2.Add growing and Shrinking effects when clicked on
+		//3.Add word spitting functionality
+		//4.Separate and animate Dongus' mouth
+		//5.Separate and animate Dongus' stars
+		const DONGUS_TOP_MIN = 10;
+
+		var newTop = DONGUS_TOP_MIN;
+		var $innergalactic = document.getElementById("innergalactic");
+
+		var startTime = new Date().getTime();
+		//Infinitely repeating function
+		//Uses the sine of total time to smoothly
+		//make image appear to "float"
+		var upAndDown = function() {
+			var currTime = new Date().getTime();
+      
+			newTop = DONGUS_TOP_MIN + (5 * Math.sin((currTime - startTime/70)/1000));
+			
+			$innergalactic.style.top = newTop + "%";
+			window.requestAnimationFrame( upAndDown );
+		};
+	upAndDown();
+    </script>
+    </body>
+</html>
