@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<!-- This is based on DillingerLee's great template here:
+https://github.com/Team-Code/KA_Offline -->
+<html> 
+ <head>
+ 	<link rel="icon" type="image/png" href="favicon.png">
+ 	<meta charset="utf-8">
+    <title>Insane Infinity Ball</title> 
+</head>
+ <body>
+    <p align="center"> 
+	<!--This draws the Canvas on the webpage -->
+      <canvas id="mycanvas"></canvas> 
+    </p>
+ </body>
+ 
+ <!-- Run all the JavaScript stuff -->
+ <!-- Include the processing.js library -->
+ <!-- See https://khanacademy.zendesk.com/hc/en-us/articles/202260404-What-parts-of-ProcessingJS-does-Khan-Academy-support- for differences -->
+ <script src="https://cdn.jsdelivr.net/processing.js/1.4.8/processing.min.js"></script> 
+ 
+ <script>
+ 	var smallestDim = 100; //Smallest dimension I am allowing.
+ 	if( (window.innerWidth <= window.innerHeight) && (window.innerWidth > 99)){
+ 		smallestDim = window.innerWidth;
+ 	} else if( (window.innerWidth > window.innerHeight) && (window.innerHeight > 99)){
+ 		smallestDim = window.innerHeight;
+ 	}
+    var sketchProc = function(processingInstance) {
+     with (processingInstance) {
+        size(smallestDim, smallestDim); 
+        frameRate(30);
+        
+        // ProgramCodeGoesHere
+/*****************
+* Created by MagicTheGavining
+* Resizable version: https://magicthegavining.github.io/InsaneInfinity.html
+* May 2020
+* +Generates "infinity" amount of answers
+* (According to Google's calculator)
+* +Applied a more appealing color palette
+* +Pluralization function
+* +Font scaling function that
+*  mostly works!!!
+* +Added word lists to generate
+*  "Mad Libs" answers
+* -Racial adjectives
+* +Infused with purple spirit power!
+* +If/Else statements using weighted ranges
+* +Function to draw triangle
+* +∞ Symbol Added
+* +Ask button and instructions
+* +Color changing button
+* +Sparks on new answer
+*****************/
+
+//Array duplicate removal function
+//based on dota2pro's answer on Stack Overflow
+//https://stackoverflow.com/questions/1584370/how-to-merge-two-arrays-in-javascript-and-de-duplicate-items
+var arrayUnique = function(incommingArray) {
+    var currentArray = incommingArray;
+    
+    for(var i=0; i<currentArray.length; ++i) {
+        for(var j=i+1; j<currentArray.length; ++j) {
+            if(currentArray[i] === currentArray[j]) {
+                currentArray.splice(j--, 1);
+            }
+        }
+    }
+
+    return currentArray;
+};
+
+var singleIdentifiers = [" A", "EACH", "ONE", "THIS", "THE"];
+var multiIdentifiers = [ "ALL", "FIVE", "FOUR", "MANY", "NINE", "SIX", "SOME", "TEN", "THE", "TWO", "ZERO"];
+var threeLetterPositiveAdjectives = ["AFT", "APT", "BIG", "COY", "CUT", "DEF", "DRY", "DUE", "DUN", "ECO", "EMO", "FAR", "FAT", "FED", "FEM", "FEY", "FLY", "FUN", "HEP", "HIP", "HIT", "HOT", "ILL", "KEY", "LAX", "LIL", "LIT", "LOW", "LUX", "MAX", "MOD", "MUM", "NEW", "OLD", "PET", "PRO", "SHY", "SLY", "TAN", "TIN", "TOP", "TOY", "WAX", "WED", "WEE", "WET", "WUD", "ZEN"];
+var threeLetterNegativeAdjectives = ["AFT", "BAD", "BUM", "CUT", "DIM", "DRY", "DUD", "DUE", "DUN", "EMO", "FAR", "FAT", "FEM", "FEY", "FOE", "FOU", "ICK", "ICY", "ILL", "LIL", "LIT", "LAX", "LOW", "MAD", "MAX", "MEH", "MOD", "MUM", "NEW", "NTH", "ODD", "OFF", "OLD", "PET", "RAW", "SAD", "SHY", "TAN", "TOY", "WAN", "WAX", "WED", "WEE", "WET", "WUD"];
+
+//Merge both above arrays and remove duplicates
+var threeLetterAdjectives = threeLetterPositiveAdjectives.concat(threeLetterNegativeAdjectives);
+threeLetterAdjectives = arrayUnique(threeLetterAdjectives);
+
+var fourLetterPositiveAdjectives = ["ABLE", "AIRY", "ALTO", "ARID", "BALD", "BARE", "BLUE", "BOLD", "BOSS", "BUFF", "BUSY", "CALM", "CLAY", "COLD", "COOL", "CORE", "COZY", "CURT", "CUTE", "DAFT", "DAMP", "DANK", "DARK", "DEAF", "DEAR", "DEEP", "DEFT", "DEWY", "DIET", "DOTY", "DOUR", "DOWN", "EAST", "EASY", "EDGY", "EPIC", "EVEN", "FAIR", "FAKE", "FAST", "FELL", "FINE", "FIRM", "FLAT", "FOND", "FORE", "FOXY", "FREE", "FULL", "FUMY", "GENT", "GILT", "GLAD", "GOLD", "GOOD", "GRAY", "GREY", "HALE", "HALF", "HARD", "HAZY", "HEWN", "HIGH", "HIND", "HOLY", "HUSH", "ICED", "IDLE", "INKY", "IRON", "JAWY", "JUST", "KEEN", "KIND", "LADY", "LAME", "LARK", "LAST", "LATE", "LAZY", "LEAL", "LEAN", "LEFT", "LIMY", "LIVE", "LOCO", "LONE", "LONG", "MADE", "MAIN", "MALE", "MALT", "MANX", "MEAN", "MEEK", "MERE", "MILD", "MOCK", "MOWN", "MUTE", "NASH", "NEAR", "NEAT", "NEXT", "NICE", "NORM", "NUDE", "OILY", "OLDE", "ONLY", "OPEN", "ORBY", "OTIC", "OVAL", "PAID", "PALE", "PAST", "PEAK", "PERT", "PIED", "PINK", "PINY", "PLUM", "POKY", "PRIM", "PUNY", "PURE", "RACY", "RAPT", "RARE", "RASH", "REAL", "REAR", "RICH", "RIFE", "RIPE", "ROPY", "ROSE", "ROSY", "RUBY", "RULY", "RUNT", "SAFE", "SAGE", "SALT", "SAME", "SANE", "SEEN", "SEER", "SICK", "SIDE", "TAIL", "TALL", "TAME", "TART", "TAUT", "TEEN", "THIN", "TIDY", "TINY", "TONY", "TRIM", "TRUE", "TWIN", "USED", "UVIC", "VAST", "VILE", "VINY", "WARM", "WARY", "WAVY", "WAXY", "WELL", "WEST", "WIDE", "WILD", "WILY", "WINY", "WIRY", "WISE", "WOOD"];
+var fourLetterNegativeAdjectives = [ "AIRY", "ALTO", "ARCH", "ARID", "BALD", "BARE", "BENT", "BLUE", "BOLD", "BONY", "BUSY", "CLAY", "COLD", "COOL", "CORE", "CURT", "DAFT", "DAMP", "DANK", "DARK", "DARN", "DEAD", "DEAF", "DEEP", "DEWY", "DIET", "DIRE", "DOTY", "DOUR", "DOWN", "DRAB", "DULL", "DUMB", "EAST", "EDGY", "EVIL", "FAKE", "FAST", "FELL", "FIRM", "FLAT", "FOOL", "FORE", "FREE", "FULL", "FUMY", "GILT", "GOLD", "GRAY", "GORY", "GREY", "GRIM", "GRUM", "HACK", "HALF", "HARD", "HAZY", "HEWN", "HIND", "HURT", "HUSH", "ICED", "IDLE", "INKY", "IRON", "JAWY", "LADY", "LAME", "LARK", "LAST", "LATE", "LAZY", "LEAN", "LEFT", "LEWD", "LIMP", "LIMY", "LIVE", "LOCO", "LONE", "LONG", "MAIN", "MALE", "MALT", "MANX", "MEAN", "MEEK", "MERE", "MILD", "MIRY", "MITY", "MOCK", "MOOT", "MOWN", "MUTE", "NEAR", "NEXT", "NORM", "NUDE", "NULL", "NUMB", "OILY", "OLDE", "ONLY", "OOZY", "OPEN", "ORBY", "OTIC", "OVAL", "PAID", "PALE", "PAST", "PIED", "PINK", "PINY", "PLUM", "POKY", "POOR", "PUNY", "RACY", "RAPT", "RARE", "RASH", "REAL", "REAR", "RICH", "RIFE", "RIPE", "ROPY", "ROSE", "ROSY", "RUBY", "RUDE", "RUNT", "SALT", "SAME", "SEEN", "SEER", "SHAM", "SICK", "SIDE", "TAIL", "TALL", "TART", "TAUT", "TEEN", "THIN", "TINY", "TWIN", "URIC", "USED", "UVIC", "VAIN", "VAST", "VILE", "VINY", "WARY", "WAVY", "WAXY", "WEAK", "WEST", "WIDE", "WILD", "WILY", "WINY", "WIRY", "WOOD"];
+
+//Merge both above arrays and remove duplicates
+var fourLetterAdjectives = fourLetterPositiveAdjectives.concat(fourLetterNegativeAdjectives);
+fourLetterAdjectives = arrayUnique(fourLetterAdjectives);
+
+var threeToFourLetterSingleSubjects = ["ABBA", "ACAI", "ACE", "ACID", "ACRE", "ADAM", "ADZE", "AEON", "AGAR", "AIDE", "ALMA", "ALMS", "ALOE", "ALTO", "ALUM", "AMEN", "ANKH", "ANNA", "ANOA", "ANTE", "APEX", "ARAB", "ARCH", "AREA", "ARES", "ARIA", "ARK", "ARM", "ARMY", "ARSE", "ASP", "ATOM", "AUNT", "AURA", "AUTO", "AXIS", "AXLE", "BAAL", "BABY", "BAIT", "BALE", "BALL", "BALM", "BAND", "BAN", "BANK", "BAP", "BARB", "BARD", "BARN", "BASE", "BATH", "BAY", "BEAD", "BEAK", "BEAM", "BEAN", "BEAU", "BEEF", "BEER", "BEET", "BELL", "BELT", "BERG", "BETA", "BEY", "BIAS", "BIB", "BIDI", "BIER", "BIKE", "BILE", "BILL", "BIRD", "BLIP", "BLOB", "BLOC", "BOAT", "BOCK", "BODY", "BOAR", "BOGY", "BOLO", "BOLT", "BOMB", "BOND", "BONE", "BOOK", "BOOR", "BOOT", "BOSS", "BOT", "BOWL", "BOZO", "BRAD", "BRAN", "BRIE", "BRIM", "BRO", "BROW", "BRUH", "BUCK", "BULB", "BULL", "BUMF", "BUNK", "BUN", "BUNN", "BUOY", "BURG", "BURR", "BUSH", "BUS", "BUSS", "BUTT", "BYTE", "CADY", "CAFE", "CAGE", "CAKE", "CALF", "CAMP", "CANE", "CAPO", "CARB", "CARD", "CARL", "CART", "CASE", "CASH", "CASK", "CAVE", "CAY", "CEL", "CELL", "CELT", "CENT", "CERE", "CETE", "CHAD", "CHAI", "CHAM", "CHEF", "CHIN", "CHIP", "CHIT", "CHOW", "CHUB", "CIG", "CION", "CIRC", "CIST", "CITY", "CLAM", "CLAN", "CLAW", "CLAY", "CLOD", "CLOT", "CLUB", "CLUE", "COAL", "COAT", "COB", "COCA", "COCO", "CODE", "COG", "COIF", "COIN", "COLA", "COLE", "COLT", "COMB", "COMP", "CONE", "CONY", "COOM", "COON", "COOP", "COOT", "COP", "COPY", "CORB", "CORD", "CORE", "CORF", "CORK", "CORM", "CORN", "COSH", "COT", "COUP", "COVE", "COWL", "COX", "CRAB", "CRAW", "CREW", "CRIB", "CROC", "CROP", "CROW", "CRUD", "CRUX", "CUBE", "CUFF", "CULT", "CURB", "CURD", "CURE", "CUSP", "CYST", "CZAR", "DACE", "DADA", "DADO", "DAD", "DAH", "DAIS", "DALE", "DAME", "DANE", "DATE", "DAWE", "DAWN", "DAY", "DEAN", "DEB", "DEBT", "DECK", "DEED", "DEER", "DELF", "DELI", "DEL", "DELL", "DEMO", "DENT", "DESK", "DEVA", "DHAL", "DHOW", "DIAL", "DIE", "DIET", "DILL", "DIME", "DINK", "DIRK", "DIRT", "DISC", "DISH", "DISK", "DIT", "DJIN", "DOC", "DOCK", "DODO", "DOER", "DOLL", "DOLT", "DOME", "DOOR", "DOPE", "DOR", "DORM", "DORY", "DOVE", "DRAM", "DRAY", "DREG", "DREY", "DROP", "DRUG", "DRUM", "DUCK", "DUCT", "DUDE", "DUET", "DUKE", "DUNE", "DUNG", "DUPE", "DUSK", "DUST", "DYER", "EARL", "EAVE", "ECHO", "EDDY", "EDEN", "EDGE", "EGG", "ELF", "ELK", "EMEU", "EMU", "EMIR", "ENT", "EON", "EPEE", "ERNE", "EROS", "ETUI", "EURO", "EVIL", "EWE", "EXAM", "EXEC", "EXPO", "EYE", "EYER", "FACE", "FACT", "FADO", "FANG", "FAIR", "FARM", "FAT", "FATE", "FAUN", "FAVE", "FAWN", "FEAR", "FEME", "FEN", "FERE", "FERN", "FIAT", "FILM", "FINK", "FISH", "FIFE", "FIST", "FIVE", "FIZZ", "FLAB", "FLAG", "FLAK", "FLAW", "FLAX", "FLEA", "FLOE", "FLUE", "FLUX", "FOAL", "FOAM", "FOG", "FOGY", "FOHN", "FOLK", "FON", "FONT", "FOOD", "FOOL", "FOOT", "FORD", "FORK", "FORM", "FORT", "FOUR", "FOWL", "FRA", "FRAT", "FROG", "FUEL", "FUME", "FUNK", "FUR", "FURY", "FUSE", "FUSS", "FUZE", "FUZZ", "GAFF", "GALE", "GAME", "GANG", "GATE", "GAZE", "GEEK", "GEM", "GENE", "GENT", "GERM", "GIFT", "GIMP", "GIRL", "GIST", "GLEN", "GILA", "GLOB", "GLOW", "GLUE", "GNAT", "GOAL", "GOAT", "GOBY", "GOER", "GOLD", "GONG", "GOON", "GOOP", "GOTH", "GRAD", "GRAM", "GRIP", "GRIT", "GROG", "GRUB", "GULF", "GULL", "GUNK", "GURL", "GURU", "GUST", "GYRO", "HAIR", "HALF", "HALL", "HALO", "HAND", "HANK", "HARE", "HART", "HARP", "HASH", "HASP", "HAWK", "HAY", "HAZE", "HEAD", "HEAP", "HEAT", "HECK", "HEEL", "HEIR", "HELM", "HEMP", "HERB", "HERD", "HERO", "HEX", "HICK", "HILL", "HILT", "HINT", "HIVE", "HOAX", "HOBO", "HOLE", "HOME", "HOOD", "HOOF", "HOOK", "HOOP", "HOPE", "HORN", "HOSE", "HOST", "HOUR", "HULK", "HULL", "HUMP", "HUNK", "HUSK", "HELP", "KALE", "KART", "KEEL", "KELP",  "KHAN", "KILN", "KILT", "KING", "KINK", "KITE", "KIWI", "KNEE", "KNOB", "KNOT", "KOOK", "LACE", "LADY", "LAKE", "LAMA", "LAMB", "LAMP", "LAND", "LANE", "LARD", "LARK", "LASS", "LAT", "LAVA", "LAWN", "LEAF", "LEEK", "LENS", "LIAR", "LICE", "LICH", "LILY", "LIMB", "LIME", "LIMO", "LINE", "LINK", "LION", "LIRA", "LIST", "LOAD", "LOAF", "LOBE", "LOCH", "LOCK", "LOFT", "LOGO", "LOOM", "LOON", "LOOP", "LOOT", "LORD", "LOTO", "LUCK", "LUMP", "LUNG", "LUNK", "LURE", "LUTE", "LYCH", "LYNX", "LYRA", "LYRE", "MACE", "MACK", "MAGE", "MAGI", "MAID", "MAIL", "MAKO", "MALE", "MALL", "MALT", "MAMA", "MANA", "MANE", "MARC", "MARE", "MARK", "MART", "MARY", "MASK", "MAST", "MATE", "MATH", "MAUL", "MAW", "MAXI", "MAZE", "MEAD", "MEAL", "MEAT", "MELT", "MEME", "MEMO", "MENU", "MERC", "MESH", "MESS", "MIC", "MIDI", "MILK", "MILL", "MIME", "MINA", "MIND", "MINK", "MINT", "MINX", "MIST", "MITT", "MOAT", "MOIL", "MOJO", "MOLD", "MOLE", "MONK", "MOOD", "MOON", "MOOR", "MORN", "MOSS", "MOTE", "MOTH", "MUCK", "MULE", "MUON", "MUSK", "MUTT", "MYNA", "MYTH", "NAIL", "NAME", "NANA", "NAPE", "NAVE", "NAVY", "NECK", "NEON", "NERD", "NEST", "NEWT", "NICK", "NOB",  "NODE", "NOOK", "NOON", "NOSE", "NOTE", "NOUN", "NOVA", "NUKE", "OAF", "OAK", "OATH", "OBIT", "OBOE", "ODE", "ODOR", "OGEE", "OGRE", "OIK", "OKRA", "OLEO", "OLIO", "OMEN", "ONO", "ONYX", "OPAH", "OPUS", "ORB", "ORCA", "ORC", "OVEN", "OVUM", "OYER", "PACK", "PACT", "PAGE", "PAIN", "PALM", "PANE", "PANG", "PAPA", "PARK", "PART", "PAST", "PATE", "PATH", "PAWN", "PEAK", "PEAL", "PEAR", "PEAT", "PEC", "PEEP", "PEER", "PEN", "PEON", "PERI", "PESO", "PEST", "PEW", "PIER", "PIG", "PIKE", "PILE", "PILL", "PINE", "PINT", "PIPE", "PITA", "PIXY", "PLAN", "PLEA", "PLEB", "PLOT", "PLOW", "PLUG", "PLUM", "POCK", "POEM", "POET", "POLE", "POLL", "POM", "POND", "PONY", "POO", "POOF", "POOL", "POOP", "POPE", "PORK", "PORT", "POST", "PRAM", "PRAT", "PREY", "PREZ", "PROB", "PROM", "PUCK", "PUFF", "PULP", "PUMA", "PUMP", "PUNK", "PUNT", "PUSS", "PYRE", "PYRO", "QUAG", "QUAY", "QUID", "QUIP", "QUIZ", "RACE", "RACK", "RAFT", "RAGE", "RAIL", "RAIN", "RAJA", "RAKE", "RAMP", "RANI", "RAT", "RATE", "RAVE", "REAM", "REAR", "REED", "REEF", "REEL",  "REIN", "RICE", "RICK", "RIFT", "RIND", "RING", "RINK", "RIOT", "RITE", "ROAD", "ROBE", "ROCK", "ROOD", "ROOF", "ROOK", "ROOM", "ROOT", "ROPE", "ROSE", "ROUT", "RUBY", "RULE", "RUMP", "RUNE", "RUNT", "RUST", "SACK", "SAGA", "SAGE", "SAIL", "SALE", "SALT", "SAND", "SASH", "SCAB", "SCAD", "SCAM", "SCAR", "SCOW", "SCUM", "SEAL", "SEAM", "SEAT", "SECT", "SEED", "SEER", "SEMI", "SERF", "SHAD", "SHAM", "SHAW", "SHEA", "SHED", "SHIM", "SHIN", "SHIP", "SHOE", "SHOP", "SHWA", "SIGN", "SILK", "SILL", "SILO", "SILT", "SIM", "SIMP", "SIRE", "SIS", "SITE", "SITH", "SKID", "SKIN", "SKIT", "SKUA", "SLAB", "SLAG", "SLAT", "SLAW", "SLED", "SLOB", "SLOT", "SLUG", "SLUM", "SMOG", "SNAG", "SNOB", "SNOT", "SNOW", "SOAP", "SOCK", "SODA", "SOFA", "SOIL", "SONG", "SOOT", "SOPH", "SORA", "SOUL", "SOUP", "SPAN", "SPEC", "SPOT", "SPUD", "STAG", "STAR", "STEM", "STEP", "STUB", "STUD", "SUDS", "SUET", "SUN", "SURF", "SWAB", "SWAG", "SWAN", "TACK", "TACO", "TACT", "TAIL", "TALC", "TALE", "TANK", "TAPE", "TARP", "TAX", "TAXI", "TEAK", "TEAM", "TEAR", "TEEN", "TEMP", "TENT", "TERM", "TERN", "TEST", "TEXT", "THEW", "THUG", "TIC", "TICK", "TIDE", "TIKE", "TILE", "TIN", "TINE", "TINK", "TINT", "TIPI", "TITI", "TOAD", "TOFT", "TOFU", "TOGA", "TOLL", "TOM", "TOMB", "TOME", "TONE", "TONG", "TOOL", "TUNE", "TOSH", "TOWN", "TRAM", "TRAP", "TRAY", "TREE", "TSAR", "TUBA", "TUBE", "TUFT", "TULE", "TUNA", "TUNE", "TURD", "TURF", "TUSH", "TUSK", "TWIT", "TWIN", "TYKE", "TYNE", "TYPO", "TYRE", "TZAR", "ULNA", "UNAU", "UNIT", "USER", "UTE", "VAIL", "VALE", "VAMP", "VANE", "VASE", "VEAL", "VEIL", "VEIN", "VENT", "VERB", "VEST", "VETO", "VEX", "VIAL", "VIBE", "VICE", "VIEW", "VINE", "VISA", "VISE", "VOLE", "VOLT", "VOTE", "WAIF", "WAIN", "WALL", "WAND", "WARD", "WARE", "WART", "WASP", "WATT", "WAVE", "WEAL", "WEED", "WEEK", "WEIR", "WHELK", "WHEY", "WHIM", "WICK", "WIFE", "WILE", "WILL", "WIMP", "WIND", "WINE", "WING", "WINO", "WIRE", "WISP", "WOLF", "WOMB", "WOOD", "WOOL", "WORD", "WORM", "WORT", "WREN", "XYST", "YANG", "YARD", "YARN", "YEAR", "YEN", "YETI", "YIN", "YOGI", "YOKE", "YOLK", "YOYO", "YURT", "ZAG", "ZAP", "ZEAL", "ZED", "ZEE", "ZERO", "ZEST", "ZIG", "ZINC", "ZING", "ZINE", "ZION", "ZIP", "ZIT", "ZITI", "ZONE", "ZOO", "ZOON"];
+
+var fiveToSixLetterSingleSubjects = [ "8-BALL", "ABBOT", "ABYSS", "ACORN", "ACTOR", "ADDER", "ADMIN", "ADULT", "AGATE", "AGAVE", "AGENT", "ALDER", "ALGAE", "ALIEN", "ALLEY", "ALLOY", "ALTAR", "AMBER", "AMOUR", "ANGEL", "ANGLE", "ANIME", "ANION", "ANKLE", "APHID", "APPLE", "APRON", "ARIES", "ARROW", "ATLAS", "ATOLL", "AXIOM", "AXMAN", "BABOON", "BACON", "BALDY", "BALER", "BALSA", "BAKER", "BANJO", "BARDE", "BARGE", "BARRON", "BATCH", "BATON", "BAYOU", "BAZAR", "BAZAAR", "BEACH", "BEARD", "BEAST", "BEAUT", "BEAUTY", "BEECH", "BEING", "BELLE", "BELLY", "BENCH", "BIBLE", "BICEP", "BIDDY", "BIKER", "BILBO", "BILLY", "BIMBO", "BISON", "BITER", "BLADE", "BLAZE", "BLIMP", "BLOCK", "BLOKE", "BLOOD", "BLOOM", "BOARD", "BONNIE", "BORAX", "CAMEO", "CANDY", "CANOE", "DADDA", "DADDY", "DEMON", "DEVIL", "DIETY", "DJINN", "DRAGON", "EGGLER", "ELBOW", "FAERY", "FAIRY", "FELLOW", "GAZER", "GECKO", "GENIE", "GIANT", "GOOSE", "HARPY", "HEART", "HELIX", "HOBBIT", "IDIOT", "IGLOO", "INKER", "JELLY", "JENNY", "JESTER", "JEWEL", "JOKER", "KABOB", "KITTEN", "KITTY", "KNAVE", "KNIGHT", "LAPIS", "LEMON", "LEMUR", "LIVER", "LLAMA", "LOOTER", "LORIS", "LOVER", "MA\'AM", "MACAW", "MACER", "MADAM", "MAGIC", "MAJICK", "MAMMY", "MANGO", "MANNA", "MAPLE", "MASON", "MATCH", "MAVEN", "MELON", "METER", "MIDAS", "MODEL", "MOMMA", "MOMMY", "MOREL", "MOSES", "MOUSE", "MULLAH", "NABOB", "NACHO", "NAMER", "NANNY", "NERVE", "NIGHT", "NOOSE", "NOTCH", "NOTER", "NOVEL", "NOZZLE", "NURSE", "NYMPH", "OBEAH", "OCEAN", "OCTET", "OFFAL", "OKAPI", "OLDIE", "OLEIN", "OLIVE", "OMEGA", "ONION", "ORACLE", "ORGAN", "ORIEL", "ORION", "OTTER", "OWLET", "OXEYE", "OXFLY", "OXLIP", "PERSON", "PIXEL", "PRAWN", "PRIZE", "PRONG", "PROSE", "PRUNE", "PSALM", "PUKER", "PUPIL", "PURSE", "PUTTY", "PYLON", "QUAIL", "QUART", "QUEAN", "QUEEN", "QUEUE", "QUILL", "QUILT", "QUIRE", "RABBI", "RACER", "RAKER", "RAMEN", "RANCH", "RATIO", "RAVEN", "RAZER", "REBEL", "RELAY", "RELIC", "RESIN", "RESUME", "RHINO", "RIDER", "RIDGE", "RIFLE", "RIVAL", "RIVER", "RIVET", "ROACH", "ROBBER", "ROBIN", "ROBOT", "RODEO", "ROGUE",  "ROOST", "ROUTE", "ROVER", "RULER", "RUMOR", "RUNNER", "RUPEE", "SABLE", "SABRE", "SALON", "SALSA", "SATYR", "SAUNA", "SAWYER", "SAXON", "SAYER", "SCALE", "SCALP", "SCAMP", "SCARF", "SCENE", "SCENT", "SCHWA", "SCION", "SCONE", "SCOOP", "SCOPE", "SCOUT", "SCRAP", "SCREW", "SCRIPT", "SCRUM", "SENSE", "SEWER", "SHACK", "SHADD", "SHADE", "SHAFT", "SHAIK", "SHALE", "SHANK", "SHAPE", "SHARD", "SHARK", "SHAWL", "SHEEP", "SHEET", "SHEIK", "SHIRE", "SHIRT", "SHORE", "SHRED", "SHREW", "SHRUB", "SICKO", "SIEVE", "SINUS", "SIREN", "SITAR", "SITHE", "SKATE", "SKEIN", "SKIER", "SKIRT", "SKULL", "SKUNK", "SLEET", "SLICE", "SLIME", "SLING", "SLOOP", "SLOTH", "SMIRK", "SMITH", "SMOCK", "SMOKE", "SNACK", "SNAIL", "SNAKE", "SNARE", "TABBY", "TABLE", "TAFFY", "TALLY", "TALON", "TANGO", "TAPIR", "TAROT", "TATER", "TAXER", "TEDDY", "TELLY", "TENOR", "TENTH", "TEXAS", "THIEF", "THIGH", "THING", "THONG", "THORN", "THIRD", "THUMB", "THYME", "TIARA", "TIGER", "TILER", "TIMER", "TITAN", "TITLE", "TOADY", "TOAST", "TOFFY", "TOKEN", "TONER", "TONIC", "TOOTH", "TOPAZ", "TOPIC", "TORCH", "TOTEM", "TOWEL", "TOWER", "TOXIN", "TRACK", "TRACT", "TRAIN", "TRAIT", "TRASH", "TREND", "TRESS", "TRIAD", "TRIAL", "TRIBE", "TRICK", "TRIKE", "TRIPE", "TROOP", "TROUT", "TROVE", "TRUCK", "TRUMP", "TRUTH", "TUBER", "TUCAN", "TULIP", "TUMMY", "TUMOR", "TUNER", "TUNIC", "TUTOR", "TWERP", "TWINE", "UDDER", "ULCER", "UMBRA", "UNCLE", "UNION", "UNITY", "URINE", "USHER", "UVULA", "UPSET", "VALET", "VALVE", "VAPER", "VAPOR", "VAULT", "VEGAN", "VENUS", "VERSE", "VESPA", "VEXER", "VICAR", "VIDEO", "VIGIL", "VILLA", "VINYL", "VIOLA", "VIPER", "VIRGO", "VIRUS", "VISION", "VISOR", "VIXEN", "VOICE", "VOTER", "VOWEL", "VOWER", "WADER", "WAFER", "WAGER", "WAGON", "WAIST", "WALTZ", "WASTE", "WATER", "WEDGE", "WEVIL", "WHALE", "WHARF", "WHEAT", "WHEEL", "WHELK", "WHIFF", "WHORL", "WICCA", "WIDDY", "WIDOW", "WIGHT", "WINCH", "WIPER", "WITCH", "WIVER", "WOMAN", "WORLD", "WOUND", "WRECK", "WRIST", "X-RAY", "XENON", "YACHT", "YEAST", "YERBA", "YOBBO", "YODEL", "YOKEL", "YOUTH", "YUCCA", "YUPPY", "ZEALOT", "ZEBRA", "ZEPHYR", "ZIGZAG", "ZINGER", "ZIPPER", "ZIRCON", "ZODIAC", "ZOMBI", "ZOMBIE", "ZOSTER", "ZYGOTE" ];
+
+var threeToFourHumanNamePartGroup = ["ABBA", "ACE", "ALMA", "ANNA", "ARAB", "ARMY", "ARSE", "AUNT", "BABY", "BARB", "BAND", "BARD", "BEAU", "BETA", "BEY", "BILL", "BODY", "BONE", "BOOR", "BOSS", "BOZO", "BRAD", "BRAN", "BRIE", "BRO", "BRUH", "BUCK", "BUSH", "BUTT", "CAMP", "CARL", "CELL", "CELT", "CHAD", "CITY", "CHEF", "CHIN", "CHIP", "CHUB", "CION", "CLAN", "CLOD", "COIF", "COON", "COOT", "COP", "COX", "CRAB", "CREW", "CULT", "CURD", "CZAR", "DADA", "DAD", "DAH", "DALE", "DAME", "DATE", "DEAN", "DEB", "DEL", "DEVA", "DJIN", "DOC", "DODO", "DOLL", "DOLT", "DOPE", "DORY", "DUDE", "DUET", "DUKE", "DUPE", "DYER", "EARL", "EDDY", "ELF", "EMIR", "EXEC", "EYE", "EYER", "FACE", "FAIR", "FARM", "FAT", "FAUN", "FEME", "FERE", "FINK", "FIST", "FLAB", "FOLK", "FOOL", "FOOT", "FRA", "FRAT", "FROG", "FURY", "FUZZ", "GANG", "GEEK", "GENT", "GIMP", "GIRL", "GLEN", "GOER", "GOON", "GOTH", "GRAD", "GURL", "GURU", "HAIR", "HAND", "HEAD", "HEEL", "HEIR", "HERO", "HICK", "HOBO", "HULK", "HUNK", "KALE", "KAHN", "KING", "KOOK", "LADY", "LARD", "LASS", "LAT", "LIAR", "LICH", "LILY", "LIMB", "LORD", "LUMP", "LUNG", "LUNK", "LYCH", "MACK", "MAGE", "MAGI", "MAID", "MALE", "MAMA", "MARK", "MARY", "MATE", "MEAT", "MERC", "MIME", "MINA", "MIND", "MINX", "MOIL", "MOLE", "MONK", "MOOR", "NANA", "NAVY", "NECK", "NERD", "NICK", "NOSE", "OAF", "OGRE", "OIK", "OPA", "OPAH", "OYER", "PALM", "PAPA", "PART", "PAWN", "PEAT", "PEC", "PEER", "PEON", "PEST", "PIG", "PIXY", "PLEB", "POET", "POOF", "POPE", "PRAT", "PREZ", "PROM", "PUNK", "PUSS", "RACE", "RAGE", "RAJ", "RAJA", "RAKE", "RANI", "RAT", "RAVE", "REAR", "RICK", "RIOT", "ROOK", "ROOM", "RUBY", "RUMP", "RUNT", "SAC", "SACK", "SAGE", "SCAB", "SCAR", "SEED", "SEER", "SERF", "SIM", "SIMP", "SIRE", "SIS", "SKIN", "SLAG", "SLOB", "SLUG", "SNOB", "SOPH", "SOUL", "STAG", "STAR", "STUD", "TAIL", "TEAM", "TEEN", "TEMP", "THUG", "TIKE", "TINK", "TOAD", "TOM", "TRAP", "TSAR", "TURD", "TUSH", "TWIT", "TWIN", "TYKE", "TZAR", "ULNA", "USER", "VAMP", "VEIN", "VOTE", "WAIF", "WASP", "WEAL", "WIFE", "WILE", "WILL", "WIMP", "WINO", "WOMB", "WOOD", "YANG", "YOGI", "YOYO", "ZED", "ZIT", "ZION", "ZONE", "ZOO", "ZOON"];
+
+var fiveToSixHumanNamePartGroup = ["ABBOT", "ACTOR", "ADMIN", "ADULT", "AGENT", "ALIEN", "AMBER", "AMOUR", "ANGEL", "ANKLE", "ARIES", "AXMAN", "BABOON", "BALDY", "BALER", "BAKER", "BARDE", "BARRON", "BAZAR", "BAZAAR", "BEAUT", "BEAUTY", "BEING", "BELLE", "BIBLE", "BICEP", "BIDDY", "BIKER", "BILLY", "BIMBO", "BITER", "BLOKE", "BLOOD", "BONNIE", "DADDA", "DADDY", "DEMON", "DEVIL", "DIETY", "DJINN", "EGGLER", "ELBOW", "FAERY", "FAIRY", "FELLOW", "GAZER", "GENIE", "GIANT", "HARPY", "HOBBIT", "IDIOT", "INKER", "JENNY", "JESTER", "JOKER", "KITTEN", "KNAVE", "KNIGHT", "LIVER", "LOOTER", "LOVER", "MA\'AM", "MACER", "MADAM", "MAMMY", "MASON", "MAVEN", "MELON", "MODEL", "MOMMA", "MOMMY", "MOSES", "MULLALH", "NABOB", "NACHO", "NAMER", "NANNY", "NOTER", "NURSE", "NYMPH", "OBEAH", "OCTET", "OLDIE", "ORACLE", "ORION", "PERSON", "PRUNE", "PUKER", "PUPIL", "QUEAN", "QUEEN", "QUEUE", "RABBI", "RACER", "RAKER", "RANCH", "RAZER", "REBEL", "RIDER", "RIVAL", "ROACH", "ROBBER", "ROBOT", "RODEO", "ROGUE", "RULER", "RUNNER", "SALON", "SATYR", "SCALP", "SCENE", "SCENT", "SCION", "SCOUT", "SCRUM", "SENSE", "SHACK", "SHAFT", "SHAIK", "SHEEP", "SHEIK", "SHREW", "SICKO", "SINUS", "SIREN", "SITHE", "SKIER", "SKIRT", "SKULL", "SKUNK", "SLOTH", "SMIRK", "SMITH", "SMOCK", "SNAKE", "TABBY", "TATER", "TAXER", "TEDDY", "TENOR", "THIEF", "THIGH", "THONG", "THUMB", "TILER", "TITAN", "TOADY", "TOKEN", "TOOTH", "TOWER", "TRAIT", "TRASH", "TRIAD", "TRIAL", "TRIBE", "TRICK", "TROOP", "TUMMY", "TUMOR", "TUTOR", "TWERP", "ULCER", "UNCLE", "UNION", "UNITY", "URINE", "USHER", "UVULA", "VALET", "VAPER", "VEGAN", "VENUS", "VEXER", "VICAR", "VIRGO", "VIRUS", "VISION", "VIXEN", "VOICE", "VOTER", "VOWER", "WADER", "WAGON", "WAIST", "WALTZ", "WASTE", "WHALE", "WICCA", "WIDDY", "WIDOW", "WIGHT", "WITCH", "WIVER", "WOMAN", "WORLD", "WOUND", "WRIST", "YACHT", "YOBBO", "YOKEL", "YOUTH", "YUPPY", "ZEALOT", "ZEBRA", "ZOMBI", "ZOMBIE", "ZOSTER", "ZYGOTE"];
+
+/* //Check for nouns less than five letters in list
+for(var i = 0; i < fiveToSixLetterSingleSubjects.length; i++){
+    if(fiveToSixLetterSingleSubjects[i].length < 5) {
+        println(fiveToSixLetterSingleSubjects[i]);
+    }
+}
+*/
+
+//Human Speech/Writing/Signing Communication Verbs
+var fiveToEightLetterVerbs = [ "BABBLING", "BARKING", "BAWLING", "BELTING", "BLABBING", "BLEATING", "BURPING", "CALLING", "CHALKING", "CROAKING", "CRYING", "GABBING", "GASPING", "GROWLING", "GRUNTING",  "GUSHING", "HISSING", "HOOTING", "HOWLING", "JOTTING", "MOANING", "MOUTHING", "MUMBLING", "PANTING", "PENNING", "PIPING", "PUFFING", "PURRING", "RASPING", "RAMBLING", "ROARING", "SHOUTING", "SIGHING", "SIGNING", "SPEWING", "SPOUTING", "TEXTING", "TUTTING", "TYPING", "WAILING", "WRITING", "YAWNING", "YELLING", "YELPING"];
+
+//Old Verb list
+//var fiveToEightLetterVerbs = [ "AVOWING", "BAKING", "BANGING", "BARFING", "BARKING", "BASHING", "BAWLING", "BEAMING", "BEATING", "BEEPING", "BELTING", "BIFFING", "BIRRING", "BITING", "BLABBING", "BLATTING", "BLOBBING", "BLOWING", "BOLTING", "BONKING", "BOOMING", "BRAGGING", "BRAYING", "BREWING", "BUCKING", "BUMPING", "BUNTING", "BURPING", "BUSTING", "BUZZING", "CALLING", "CASTING", "CHALKING", "CHARRING", "CHATTING", "CHAWING", "CHEWING", "CHIPPING", "CHUGGING", "CITING", "CLAPPING", "CLIPPING", "CLOGGING", "CLOPPING", "CODING", "COIFING", "COMBING", "CONKING", "COOKING", "COPYING", "CRAMMING", "CUFFING", "CUSSING", "DABBING", "DANCING", "DAUBING", "DEALING", "DENTING", "DIALING", "DINGING", "DISHING", "DRAWING", "DRUBBING", "DRUMMING", "DUMPING", "EASING", "ECHOING", "EMITTING", "ETCHING", "FIZZING", "FLAPPING", "FLITTING", "FLOGGING", "FLOPPING", "FLUXING", "FOAMING", "FOLDING", "FORGING", "FORMING", "FRAYING", "FRETTING", "FUNKING", "GASPING", "GIFTING", "GIVING", "GLOWING", "GNASHING", "GNAWING", "GONGING", "GRITTING", "GROWING", "GULPING", "GUSHING", "HACKING", "HAILING", "HALING", "HARKING", "HARPING", "HASHING", "HINTING", "HISSING", "HONKING", "HOOTING", "HOPPING", "HOWLING", "HUFFING", "HUSHING", "INCHING", "JELLING", "JEERING", "JIVING", "JOKING", "JOTTING", "KICKING", "KNITTING", "LASHING", "LEAKING", "LEAPING", "LEERING", "LIPPING", "LISPING", "LISTING", "LOFTING", "LOLLING", "LULLING", "LUMPING", "MAILING", "MARKING", "MASHING", "MAULING", "MEOWING", "MILLING", "MIMING", "MINING", "MINTING", "MOANING", "MOCKING", "MOLDING", "MOPING", "MOSHING", "MOUTHING", "MULLING", "MUSHING", "NAILING", "NAMING", "NICKING", "OINKING", "OOZING", "PANTING", "PEALING", "PECKING", "PEELING", "PEEPING", "PELTING", "PICKING", "PINGING", "PIPING", "PLODDING", "PLOPPING", "PLUCKING", "PLUGGING", "PLUNGING", "POKING", "POURING", "POUTING", "PUFFING", "PUKING", "PUMPING", "PURLING", "PURRING", "PUTTING", "QUIPPING", "RAILING", "RAINING", "RANTING", "RASPING", "RAVING", "RAZZING", "RINGING", "ROARING", "ROCKING", "ROMPING", "SAYING", "SEEPING", "SENDING", "SHARING", "SHINING", "SHOOTING", "SHOUTING", "SHOWING", "SIFTING", "SIGHING", "SIGNING", "SKIDDING", "SKIPPING", "SLAPPING", "SLUGGING", "SLURPING", "SLURRING", "SNAPPING", "SNIPPING", "SNOGGING", "SNUBBING", "SOCKING", "SPAMMING", "SPELLING", "SPEWING", "SPINNING", "SPITTING", "SPURRING", "STABBING", "STEPPING", "STUBBING", "SWATTING", "SWIMMING", "TACKING", "TACKLING", "TALKING", "TAPPING", "TEARING", "TELLING", "TEXTING", "THUDDING", "TICKING", "TILLING", "TINGING", "TOCKING",  "TOLLING", "TONING", "TOOTING", "TOSSING", "TRIMMING", "TROTTING", "TUNING", "TURNING", "TYPING", "URGING", "VENDING", "VOWING", "WAFTING", "WAILING", "WAVING", "WEAVING", "WEEPING", "WELDING", "WELTING", "WHIPPING", "WHIRRING", "WHIZZING", "WHOOPING", "WHOPPING", "WILLING", "WINKING",  "WIRING", "WISHING", "WRITING", "YACKING", "YANKING", "YAWNING", "YELLING", "YELPING"];
+
+var threeToTenLetterPositive = [ "ABSOLUTELY", "ALRIGHT", "ALRIGHTY", "ALWAYS", "YEP ALWAYS", "YES ALWAYS", "YEP AMEN", "YES AMEN", "A-OKAY", "AN A-OKAY", "APPROVED", "ASSUREDLY", "AN AYE", "AYE AYE", "YOU BET", "BRILLIANT", "CERTAINLY", "YEP CHEER", "YES CHEER",  "OF COURSE", "TRUE DAT", "DEFINITELY", "OKIE DOKIE", "IT'S FINE", "JUST FINE", "A FORSOOTH", "FORSOOTH", "GRANTED", "YES INDEED", "YEP INDEED", "A JA", "JA", "AN MHMM", "MMHMMM", "NATURALLY", "WHY NOT?", "AN OK", "AN OKAY", "IT'S ON", "SPOT ON", "RIGHT ON", "POSITIVELY", "ALL RIGHT", "A RIGHTO", "RIGHTO",  "ALL RIGHTY", "A ROGER", "I SUPPOSE", "SUPPOSE SO", "YES SIR", "JUST SO", "FOR SURE", "A SURELY", "SURELY", "ROGER THAT", "A TOTES", "TOTES", "UH-HUH", "A VERILY", "VERILY", "VERY WELL", "YAAAS", "A VOTE YEA", "A YEA", "A YEAH", "HECK YEAH", "A YEP", "YEP", "A YES", "A FINE YES", "YES", "YES, YES", "A YESSIR", "YESSIR", "A YUP", "YUP", "A YUPPERS", "YUPPERS"];
+
+var threeToTenLetterNegative = [ "IMPOSSIBLE", "A SOLID NO", "BAD NEWS", "BOO, NAY", "A NAH", "NAH", "BOO, NO", "BOO, NOPE", "CURSED, NO", "DANG, NAY", "NEIN", "NEVER", "NO, NEVER", "DANG, NO", "DANG, NOPE", "DARN, NAY", "DARN, NIX", "DARN, NO", "DARN, NOPE", "DEARY, NO", "DRAT, NAY", "DRAT, NIX", "DRAT, NO", "DRAT, NOPE",  "FAIL, NO", "GEEZ, NO", "GEEZ, NAY", "GLUM, NAY", "GLUM, NO", "GLUM, NOPE", "GOLLY NO", "GOSH NO", "GOSH NOPE", "HECK NO", "JUST NO", "NAY", "NEVER", "NO CAN DO", "NO DICE", "NO LUCK", "NONO, NO", "NOT NOW", "NO WAY", "A NOPE", "NOPE", "ODIOUS, NO", "OUCH, NO", "OUCH, NOPE", "NOT LIKELY", "POOH, NO", "POOH, NOPE", "RATS, NO", "SAD, NO", "SAD, NOPE", "SADLY, NO", "SHOVE OFF", "SHUCKS, NO", "SORRY, NO", "UH-UH", "NO", "NO CHANCE", "NO GOOD", "NOOOO", "NOPE", "NO SIR", "NOT LIKELY", "NUH-UH", "NO WAY", "NYET", "OH MY, NO", "UHH, NO" ];
+
+var threeToTenLetterNeutral = [ "TRY AGAIN", "ASSUMABLY", "IT'S BLURRY", "TOO BLURRY", "BY CHANCE", "IT'S CLOUDY", "TOO CLOUDY", "DEPENDS", "A DEPENDS", "IT DEPENDS", "I DUNNO", "TOO ELUSIVE", "IT'S FOGGY", "TOO FOGGY", "IT'S FUZZY", "TOO FUZZY", "IT'S GAUZY", "TOO GAUZY", "HAPLY", "A HAPLY", "IT'S HAZY", "TOO HAZY", "IT'S IFFY", "TOO IFFY", "WITH LUCK", "BY LUCK", "MAYBE", "A MAYBE", "LIKE MAYBE", "WE'LL SEE", "NOT SURE", "IT'S OPAQUE", "TOO OPAQUE", "TOO SMEARED", "IT'S SMOGGY", "TOO SMOGGY", "IT'S SMOKY", "TOO SMOKY", "TENABLE", "A TENABLE", "TENABLY", "UH MAYBE", "AN UNCLEAR", "AN UNSURE", "I'M UNSURE", "IT'S VAGUE", "TOO VAGUE", "VIABLY", "A VIABLY", "IT'S VEILED", "TOO VEILED", "IF WILLING", "IT'S WOBBLY", "TOO WOBBLY", "A PERHAPS", "PERHAPS", "PLAUSIBLY", "POSSIBLY", "A POSSIBLY", "PERCHANCE", "MAYHAP", "A MAYHAP", "COULD BE", "FEASIBLY", "A FEASIBLY", "MIGHT BE", "IT MAY BE", "YES AND NO", "IT CAN BE", "I HOPE SO", "CAN'T TELL", "PERCASE", "A PERCASE", "UNKNOWN", "AN UNKNOWN"];
+
+//Obtain dimensions from canvas size, so it can adjust to screen/browser on startup
+var canvasCenter = width/2;
+var mainBallSize = (width * 0.7625);
+var purpleLiquidSize = (width * 0.445);
+var mainWhiteCircleY = (height * 0.1875);
+var mainWhiteCircleWidth = (width * 0.245);
+var mainWhiteCircleHeight = (height * 0.1175);
+
+var miniBallCenterX = (width * 0.93);
+var miniBallCenterY = (height * 0.863);
+var miniBallSize = (width * 0.045);
+var miniWhiteCircleSize = (width * 0.03);
+var miniInfinityX = (width * 0.922);
+var miniInfinityY = (height * 0.871);
+
+var triangleTopPeakY = (height * 0.3075);
+var triangleBottomRightCornerX = (width * 0.6775);
+var triangleBottomCornersY = (height * 0.62);
+var triangleBottomLeftCornerX = (width * 0.3225);
+
+var askButtonX = (width * 0.75);
+var askButtonY = (height * 0.793);
+var askButtonWidth = (width * 0.2175);
+var askButtonHeight = (height * 0.125);
+var askTextX = (width * 0.7825);
+var askTextY = (height * 0.88);
+var askRightEdge = (askButtonX + askButtonWidth);
+var askBottomEdge = (askButtonY + askButtonHeight);
+
+var textAX = (width * 0.46);
+var textAY = (height * 0.4625);
+var textBX = (width * 0.4075);
+var textBY = (height * 0.505);
+var textCX = (width * 0.385);
+var textCY = (height * 0.5475);
+var textDX = (width * 0.36);
+var textDY = (height * 0.59);
+
+var numX = (width * 0.02);
+var numY = (height  * 0.791);
+var numWidth = (width * 0.475);
+var numHeight = (height * 0.21);
+var numRightEdge = (numX + numWidth);
+//var numBottomEdge = (numY + numHeight); same as "height"
+
+var justAPlural = false;
+var plXY = (width * 0.0625);
+var thirdWidth = round(width * 0.33);
+var thirdHeight = round(height * 0.33);
+
+var strokeWeight12 = round(width * 0.03);
+var strokeWeight10 = round(width * 0.025);
+var strokeWeight8 = round(width * 0.02);
+var strokeWeight5 = round(width * 0.0125);
+var strokeWeight4 = round(width * 0.01);
+var strokeWeight2 = round(width * 0.005);
+
+//Global variables used in animations
+var colorShift = 0;
+var increaseColor = true;
+var magicSparks = false;
+var fadeInAnswer = false;
+var alphaAnswer = 0;
+var sparkDistance = 0;
+var sparkSizeA = 3;
+var sparkSizeB = 3;
+var sparkSizeC = 3;
+var sparkSizeD = 3;
+var sparkDistanceModifier = round(width * 0.0025);
+var glowing8X = (width * 0.4625);
+var glowing8Y = (height * 0.22);
+var coverOpacity = 255;
+
+
+//Background
+var START_BG_RED = 155;
+var START_BG_GREEN = 209;
+var START_BG_BLUE = 229;
+var bgRed = START_BG_RED;
+var bgGreen = START_BG_GREEN;
+var bgBlue = START_BG_BLUE;
+
+//Defining an upper limit on # of answers
+var UPPER_LIMIT = 35;
+var answer = UPPER_LIMIT;
+
+
+//Making sure the text answers have a standard size
+//and appearance with a monospace font
+var fontMono = createFont("monospace");
+
+
+//Since there is no direct pixel size to font
+//size relation, this is what I use for scaling
+//monotype text to larger or smaller sizes.
+var scaleTextSize = function (originalSize){
+    var newTextSize = (originalSize * (6/15)) / 400;
+    newTextSize = ((newTextSize * width) * (15/6));
+    return newTextSize;
+};
+
+//I may have been better off making sperate
+//arrays of plural nouns, but I like a good
+//challenge!  So many exceptions to rules...
+var pluralize = function(incomingNoun){
+    var outputNoun = incomingNoun;
+    var lastCharacter = incomingNoun.length - 1;
+    
+    if(incomingNoun[lastCharacter] === 'Y'){
+        outputNoun = outputNoun.substring(0, lastCharacter); //remove Y
+        return ( outputNoun + "IES");
+    } else if (incomingNoun === "ARIES" || incomingNoun === "BRIE" || incomingNoun === "DEER" || incomingNoun === "EROS" || incomingNoun === "LICE" || incomingNoun === "SHEEP" || incomingNoun === "TUNA") {
+        return incomingNoun;
+    } else if (incomingNoun === "HOOF") {
+        outputNoun = outputNoun.substring(0, lastCharacter); // remove F
+        return ( outputNoun + "VES" );
+    } else if (incomingNoun === "AXIS") {
+        return ( "AXES" );
+    } else if (incomingNoun === "TOOTH") {
+        return ( "TEETH" );
+    } else if (incomingNoun === "BUMF") {
+        return ( "BUMPHS" );
+    } else if (incomingNoun === "GOOSE") {
+        return ( "GEESE" );
+    } else if (incomingNoun === "MOUSE") {
+        return ( "MICE" );
+    } else if (incomingNoun === "PERSON") {
+        return ( "PEOPLE" );
+    } else if (incomingNoun === "TOPAZ") {
+        return ( outputNoun + "ES" );
+    } else if (incomingNoun[lastCharacter - 1] === 'I' && incomingNoun[lastCharacter] === 'S'){
+        return ( outputNoun + "ES" );
+    } else if (incomingNoun === "HUMAN" || incomingNoun === "ROMAN") {
+        return ( outputNoun + 'S' );
+    } else if (incomingNoun[lastCharacter - 2] === 'M' && incomingNoun[lastCharacter - 1] === 'A' && incomingNoun[lastCharacter] === 'N'){
+        outputNoun = outputNoun.substring(0, (lastCharacter - 1)); //remove AN
+        return ( outputNoun + "EN" );
+    } else if (incomingNoun[lastCharacter - 1] === 'F' && incomingNoun[lastCharacter] === 'E'){
+        outputNoun = outputNoun.substring(0, (lastCharacter - 1)); //remove FE
+        return ( outputNoun + "VES" );
+    } else if ((incomingNoun[lastCharacter - 1] !== 'F' && incomingNoun[lastCharacter - 1] !== 'E' && incomingNoun[lastCharacter - 1] !== 'O') && incomingNoun[lastCharacter] === 'F'){
+        outputNoun = outputNoun.substring(0, lastCharacter); //remove F
+        return ( outputNoun + "VES" );
+    } else if (incomingNoun[lastCharacter] === 'S'){
+        return ( outputNoun + "ES" );
+    } else if (incomingNoun[lastCharacter] === 'X'){
+        return ( outputNoun + "ES" );
+    } else if ((incomingNoun[lastCharacter - 1] === 'T' || incomingNoun[lastCharacter - 1] === 'Z') && incomingNoun[lastCharacter] === 'Z'){
+        return ( outputNoun + "ES" );
+    } else if ((incomingNoun[lastCharacter - 1] === 'A' || incomingNoun[lastCharacter - 1] === 'E' || incomingNoun[lastCharacter - 1] === 'I' || incomingNoun[lastCharacter - 1] === 'O' || incomingNoun[lastCharacter - 1] === 'U') && incomingNoun[lastCharacter] === 'Z'){
+        return ( outputNoun + "ZES" );
+    } else if ((incomingNoun[lastCharacter - 1] === 'C' || incomingNoun[lastCharacter - 1] === 'S')&& incomingNoun[lastCharacter] === 'H'){
+        return ( outputNoun + "ES" );
+    } else if ( incomingNoun[lastCharacter - 2] === 'E' && incomingNoun[lastCharacter - 1] === 'A' && incomingNoun[lastCharacter] === 'U'){
+        return ( outputNoun + "X" );
+    } else if ((incomingNoun[lastCharacter - 1] === 'H' || incomingNoun[lastCharacter - 1] === 'R' || incomingNoun[lastCharacter - 1] === 'T') && incomingNoun[lastCharacter - 2] !== 'Y'  && incomingNoun[lastCharacter - 2] !== 'B' && incomingNoun[lastCharacter - 2] !== 'U' && incomingNoun[lastCharacter] === 'O'){
+        return ( outputNoun + "ES" );
+    } else {
+        return (outputNoun + 'S');
+    }
+};
+
+var storedAnswerTriangle = {
+    triangleColor: color(106, 142, 174),
+    textColor: color(209, 250, 255),
+    sizeForText: scaleTextSize(11),
+    messageLineA: "THINK",
+    messageLineB: "OF A YES OR",
+    messageLineC: " NO QUESTION,",
+    messageLineD: "  THEN ASK ME!!"
+};
+
+//Scaling text sizes for ∞ Ball and Buttons
+var askTextSize = scaleTextSize(25);
+var bigInfinityTextSize = scaleTextSize(50);
+var miniInfinityTextSize = scaleTextSize(11);
+var revealTextSize = scaleTextSize(14);
+var main8X = ((width * 0.5) -  (bigInfinityTextSize * 0.29));
+var main8Y = (height * 0.2175);
+
+//Draw the triangle inside the ∞ Ball using this function
+//tri is the incoming answer triangle parts.
+var drawTriangle = function(tri){
+    fill(tri.triangleColor);
+    triangle(canvasCenter, triangleTopPeakY, triangleBottomRightCornerX, triangleBottomCornersY, triangleBottomLeftCornerX, triangleBottomCornersY);
+    fill(tri.textColor);
+    textSize(tri.sizeForText);
+    text(tri.messageLineA, textAX, textAY);
+    text(tri.messageLineB, textBX, textBY);
+    text(tri.messageLineC, textCX, textCY);
+    text(tri.messageLineD, textDX, textDY);
+};
+
+
+var generateRandomPluralWord = function(){
+    var storedPluralSubject = "";
+    
+    if(floor(random(0, 2))) { //same as random true/false
+        storedPluralSubject = pluralize(threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))]);
+    } else {
+        storedPluralSubject = pluralize(fiveToSixLetterSingleSubjects[floor(random(0, fiveToSixLetterSingleSubjects.length))]);
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: "",
+        messageLineB: "",
+        messageLineC: "PLURAL WORD:",
+        messageLineD: storedPluralSubject
+    };
+};
+
+
+/***************************
+ * Function: generateRandomAffirmativeA
+ * Generates a random affirmative answer triangle
+ * Storing it in global variable storedAnswerTriangle
+ * Form: One/A/An/The/This
+ * (3 letter positive adjective) (3 to 6 letter singular subject)
+ * Is (verb ending in "ing")
+ * Out (synonym/phrase of Yes)
+***************************/
+var generateRandomAffirmativeA = function(){
+
+    var storedSingleSubject;
+    
+    //Same as random true = 1 and false = 0
+    if(floor(random(0,2))) {
+        storedSingleSubject = fiveToSixLetterSingleSubjects[floor(random(0, fiveToSixLetterSingleSubjects.length))];
+    } else {
+        storedSingleSubject = threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))];
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: singleIdentifiers[floor(random(0, singleIdentifiers.length))],
+        messageLineB: threeLetterPositiveAdjectives[floor(random(0, threeLetterPositiveAdjectives.length))] + " " +         storedSingleSubject,
+        messageLineC: "IS " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToTenLetterPositive[floor(random(0, threeToTenLetterPositive.length))] + "!!"
+    };
+    
+    //Change A to AN for vowel adjectives
+    if(storedAnswerTriangle.messageLineA[1] === 'A'){
+        switch(storedAnswerTriangle.messageLineB[0]){
+            case 'A':
+            case 'E':
+            case 'I':
+            case 'O':
+            case 'U':
+                storedAnswerTriangle.messageLineA = "AN";
+            break;
+            //Since NTH is pronounced "EN-TH", need AN instead of A
+            case 'N':
+                if(storedAnswerTriangle.messageLineB[1] === 'T') {
+                    storedAnswerTriangle.messageLineA = "AN";
+                }
+            break;
+        }
+    }
+    
+};
+
+/***************************
+ * Function: generateRandomAffirmativeB
+ * Generates a random affirmative answer triangle
+ * Storing it in global variable storedAnswerTriangle
+ * Form: By
+ * (3 to 6 letter singular subject)! The
+ * (3 letter positive adjective) answer
+ * Is (synonym/phrase of Yes)
+***************************/
+var generateRandomAffirmativeB = function(){
+    
+    var storedSingleSubject;
+    
+    //Same as random true = 1 and false = 0
+    if(floor(random(0,2))) {
+        storedSingleSubject = fiveToSixLetterSingleSubjects[floor(random(0, fiveToSixLetterSingleSubjects.length))];
+    } else {
+        storedSingleSubject = threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))];
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: "BY",
+        messageLineB: storedSingleSubject + "! THE",
+        messageLineC: threeLetterPositiveAdjectives[floor(random(0, threeLetterPositiveAdjectives.length))] + " ANSWER",
+        messageLineD: "IS " + threeToTenLetterPositive[floor(random(0, threeToTenLetterPositive.length))] + "!!"
+    };
+};
+
+/***************************
+ * Function: generateRandomAffirmativeC
+ * Generates a random affirmative answer triangle
+ * Storing it in global variable storedAnswerTriangle
+ * Form: One/A/An/The/This
+ * (4 letter positive adjective) (3 to 4 letter singular subject)
+ * Is (verb ending in "ing")
+ * Out (synonym/phrase of Yes)
+***************************/
+var generateRandomAffirmativeC = function(){
+    
+    var storedPositiveAdjective;
+    
+    //Same as random 9 out of 10
+    if(floor(random(0, 10)) > 0) {
+        storedPositiveAdjective = fourLetterPositiveAdjectives[floor(random(0, fourLetterPositiveAdjectives.length))];
+    } else {
+        storedPositiveAdjective = threeLetterPositiveAdjectives[floor(random(0, threeLetterPositiveAdjectives.length))];
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: singleIdentifiers[floor(random(0, singleIdentifiers.length))],
+        messageLineB: storedPositiveAdjective + " " + threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))],
+        messageLineC: "IS " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToTenLetterPositive[floor(random(0, threeToTenLetterPositive.length))] + "!!"
+    };
+    
+    //Change A to AN for vowel adjectives
+    if(storedAnswerTriangle.messageLineA[1] === 'A'){
+        switch(storedAnswerTriangle.messageLineB[0]){
+            case 'A':
+            case 'E':
+            case 'I':
+            case 'O':
+            case 'U':
+                storedAnswerTriangle.messageLineA = "AN";
+            break;
+            //Since NTH is pronounced "EN-TH", need AN instead of A
+            case 'N':
+                if(storedAnswerTriangle.messageLineB[1] === 'T') {
+                    storedAnswerTriangle.messageLineA = "AN";
+                }
+            break;
+        }
+    }
+    
+};
+
+/***************************
+ * Function: generateRandomAffirmativeD
+ * Generates a random affirmative answer triangle
+ * Storing it in global variable storedAnswerTriangle
+ * Form: Plural Identifier
+ * (3 to 4 letter positive adjective) (3 to 5 letter plural subject)
+ * Are (verb ending in "ing")
+ * Out (synonym/phrase of Yes)
+***************************/
+var generateRandomAffirmativeD = function(){
+
+    var storedPluralSubject;
+    
+    storedPluralSubject = pluralize(threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))]);
+    while(storedPluralSubject.length > 5){
+        storedPluralSubject = pluralize(threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))]);
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: multiIdentifiers[floor(random(0, multiIdentifiers.length))],
+        messageLineB: fourLetterPositiveAdjectives[floor(random(0, fourLetterPositiveAdjectives.length))] + " " + storedPluralSubject,
+        messageLineC: "ARE " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToTenLetterPositive[floor(random(0, threeToTenLetterPositive.length))] + "!!"
+    };
+};
+
+
+/***************************
+ * Function: generateRandomNegativeA
+ * Generates a random negative answer triangle
+ * Storing it in global variable storedAnswerTriangle
+ * Form: One/A/An/The/This
+ * (3 letter negative adjective) (3 to 6 letter singular subject)
+ * Is (verb ending in "ing")
+ * Out (synonym/phrase of No)
+***************************/
+var generateRandomNegativeA = function(){
+    
+    var storedSingleSubject;
+    
+    //Same as random true = 1 and false = 0
+    if(floor(random(0,2))) {
+        storedSingleSubject = fiveToSixLetterSingleSubjects[floor(random(0, fiveToSixLetterSingleSubjects.length))];
+    } else {
+        storedSingleSubject = threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))];
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: singleIdentifiers[floor(random(0, singleIdentifiers.length))],
+        messageLineB: threeLetterNegativeAdjectives[floor(random(0, threeLetterNegativeAdjectives.length))] + " " +         storedSingleSubject,
+        messageLineC: "IS " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToTenLetterNegative[floor(random(0, threeToTenLetterNegative.length))] + "!!"
+    };
+    
+    //Change A to AN for vowel adjectives
+    if(storedAnswerTriangle.messageLineA[1] === 'A'){
+        switch(storedAnswerTriangle.messageLineB[0]){
+            case 'A':
+            case 'E':
+            case 'I':
+            case 'O':
+            case 'U':
+                storedAnswerTriangle.messageLineA = "AN";
+            break;
+            //Since NTH is pronounced "EN-TH", need AN instead of A
+            case 'N':
+                if(storedAnswerTriangle.messageLineB[1] === 'T') {
+                    storedAnswerTriangle.messageLineA = "AN";
+                }
+            break;
+        }
+    }
+    
+};
+
+
+/***************************
+ * Function: generateRandomNegativeB
+ * Generates a random negative answer triangle
+ * Storing it in global variable storedAnswerTriangle
+ * Form: Oh
+ * (3 to 6 letter singular subject)! The
+ * (3 letter negative adjective) answer
+ * Is (synonym/phrase of No)
+***************************/
+var generateRandomNegativeB = function(){
+    
+    var storedSingleSubject;
+    
+    //Same as random true = 1 and false = 0
+    if(floor(random(0,2))) {
+        storedSingleSubject = fiveToSixLetterSingleSubjects[floor(random(0, fiveToSixLetterSingleSubjects.length))];
+    } else {
+        storedSingleSubject = threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))];
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: "OH",
+        messageLineB: storedSingleSubject + "! THE",
+        messageLineC: threeLetterNegativeAdjectives[floor(random(0, threeLetterNegativeAdjectives.length))] + " ANSWER",
+        messageLineD: "IS " + threeToTenLetterNegative[floor(random(0, threeToTenLetterNegative.length))] + "!!"
+    };
+};
+
+/***************************
+ * Function: generateRandomNegativeC
+ * Generates a random negative answer triangle
+ * Storing it in global variable storedAnswerTriangle
+ * Form: One/A/An/The/This
+ * (3 or 4 letter negative adjective) (3 to 4 letter singular subject)
+ * Is (verb ending in "ing")
+ * Out (synonym/phrase of No)
+***************************/
+var generateRandomNegativeC = function(){
+    
+    var storedNegativeAdjective;
+    
+    //Same as random 9 out of 10
+    if(floor(random(0, 10)) > 0) {
+        storedNegativeAdjective = fourLetterNegativeAdjectives[floor(random(0, fourLetterNegativeAdjectives.length))];
+    } else {
+        storedNegativeAdjective = threeLetterNegativeAdjectives[floor(random(0, threeLetterNegativeAdjectives.length))];
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: singleIdentifiers[floor(random(0, singleIdentifiers.length))],
+        messageLineB: storedNegativeAdjective + " " + threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))],
+        messageLineC: "IS " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToTenLetterNegative[floor(random(0, threeToTenLetterNegative.length))] + "!!"
+    };
+    
+    //Change A to AN for vowel adjectives
+    if(storedAnswerTriangle.messageLineA[1] === 'A'){
+        switch(storedAnswerTriangle.messageLineB[0]){
+            case 'A':
+            case 'E':
+            case 'I':
+            case 'O':
+            case 'U':
+                storedAnswerTriangle.messageLineA = "AN";
+            break;
+            //Since NTH is pronounced "EN-TH", need AN instead of A
+            case 'N':
+                if(storedAnswerTriangle.messageLineB[1] === 'T') {
+                    storedAnswerTriangle.messageLineA = "AN";
+                }
+            break;
+        }
+    }
+    
+};
+
+/***************************
+ * Function: generateRandomNegativeD
+ * Generates a random affirmative answer triangle
+ * Storing it in global variable storedAnswerTriangle
+ * Form: Plural Identifier
+ * (4 letter negative adjective) (3 to 5 letter plural subject)
+ * Are (verb ending in "ing")
+ * Out (synonym/phrase of No)
+***************************/
+var generateRandomNegativeD = function(){
+
+    var storedPluralSubject;
+    
+    storedPluralSubject = pluralize(threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))]);
+    while(storedPluralSubject.length > 5){
+        storedPluralSubject = pluralize(threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))]);
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: multiIdentifiers[floor(random(0, multiIdentifiers.length))],
+        messageLineB: fourLetterNegativeAdjectives[floor(random(0, fourLetterNegativeAdjectives.length))] + " " + storedPluralSubject,
+        messageLineC: "ARE " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToTenLetterNegative[floor(random(0, threeToTenLetterNegative.length))] + "!!"
+    };
+};
+
+/***************************
+ * Function: generateRandomNeutralA
+ * Generates a random affirmative answer triangle
+ * Storing it in global variable storedAnswerTriangle
+ * Form: One/A/An/The/This
+ * (3 letter positive or negative adjective) (3 to 6 letter singular subject)
+ * Is (verb ending in "ing")
+ * Out (synonym/phrase of maybe)
+***************************/
+var generateRandomNeutralA = function(){
+    
+    var storedSingleSubject;
+    
+    //Same as random true = 1 and false = 0
+    if(floor(random(0,2))) {
+        storedSingleSubject = fiveToSixLetterSingleSubjects[floor(random(0, fiveToSixLetterSingleSubjects.length))];
+    } else {
+        storedSingleSubject = threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))];
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: singleIdentifiers[floor(random(0, singleIdentifiers.length))],
+        messageLineB: threeLetterAdjectives[floor(random(0, threeLetterAdjectives.length))] + " " + storedSingleSubject,
+        messageLineC: "IS " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToTenLetterNeutral[floor(random(0, threeToTenLetterNeutral.length))] + "."
+    };
+    
+    //Change A to AN for vowel adjectives
+    if(storedAnswerTriangle.messageLineA[1] === 'A'){
+        switch(storedAnswerTriangle.messageLineB[0]){
+            case 'A':
+            case 'E':
+            case 'I':
+            case 'O':
+            case 'U':
+                storedAnswerTriangle.messageLineA = "AN";
+            break;
+            //Since NTH is pronounced "EN-TH", need AN instead of A
+            case 'N':
+                if(storedAnswerTriangle.messageLineB[1] === 'T') {
+                    storedAnswerTriangle.messageLineA = "AN";
+                }
+            break;
+        }
+    }
+};
+
+/***************************
+ * Function: generateRandomNeutralC
+ * Generates a random affirmative answer triangle
+ * Storing it in global variable storedAnswerTriangle
+ * Form: One/A/An/The/This
+ * (3 or 4 letter positive or negative adjective) (3 to 4 letter singular subject)
+ * Is (verb ending in "ing")
+ * Out (synonym/phrase of maybe)
+***************************/
+var generateRandomNeutralC = function(){
+    
+    var storedAdjective;
+    
+    //Same as random 9 out of 10
+    if(floor(random(0, 10)) > 0) {
+        storedAdjective = fourLetterAdjectives[floor(random(0, fourLetterAdjectives.length))];
+    } else {
+        storedAdjective = threeLetterAdjectives[floor(random(0, threeLetterAdjectives.length))];
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: singleIdentifiers[floor(random(0, singleIdentifiers.length))],
+        messageLineB: storedAdjective + " " + threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))],
+        messageLineC: "IS " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToTenLetterNeutral[floor(random(0, threeToTenLetterNeutral.length))] + "."
+    };
+    
+    //Change A to AN for vowel adjectives
+    if(storedAnswerTriangle.messageLineA[1] === 'A'){
+        switch(storedAnswerTriangle.messageLineB[0]){
+            case 'A':
+            case 'E':
+            case 'I':
+            case 'O':
+            case 'U':
+                storedAnswerTriangle.messageLineA = "AN";
+            break;
+            //Since NTH is pronounced "EN-TH", need AN instead of A
+            case 'N':
+                if(storedAnswerTriangle.messageLineB[1] === 'T') {
+                    storedAnswerTriangle.messageLineA = "AN";
+                }
+            break;
+        }
+    }
+};
+
+/***************************
+ * Function: generateRandomNeutralD
+ * Generates a random affirmative answer triangle
+ * Storing it in global variable storedAnswerTriangle
+ * Form: Plural Identifier
+ * (4 letter negative adjective) (3 to 5 letter plural subject)
+ * Are (verb ending in "ing")
+ * Out (synonym/phrase of No)
+***************************/
+var generateRandomNeutralD = function(){
+
+    var storedPluralSubject;
+    
+    storedPluralSubject = pluralize(threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))]);
+    while(storedPluralSubject.length > 5){
+        storedPluralSubject = pluralize(threeToFourLetterSingleSubjects[floor(random(0, threeToFourLetterSingleSubjects.length))]);
+    }
+    
+    storedAnswerTriangle = {
+        triangleColor: color(106, 142, 174),
+		textColor: color(209, 250, 255),
+        sizeForText: scaleTextSize(13),
+        messageLineA: multiIdentifiers[floor(random(0, multiIdentifiers.length))],
+        messageLineB: fourLetterAdjectives[floor(random(0, fourLetterAdjectives.length))] + " " + storedPluralSubject,
+        messageLineC: "ARE " + fiveToEightLetterVerbs[floor(random(0, fiveToEightLetterVerbs.length))],
+        messageLineD: "OUT " + threeToTenLetterNeutral[floor(random(0, threeToTenLetterNeutral.length))] + "!!"
+    };
+};
+
+//Generate a random number out of UPPER_LIMIT
+//number of possible values.
+var askInfinityBall = function() {
+    answer = floor(random(0, UPPER_LIMIT));
+    
+    if(justAPlural){
+        generateRandomPluralWord();
+    } else {
+    
+    if (answer === 0 ) {
+        generateRandomAffirmativeA();
+    } else if (answer === 1) {
+        generateRandomAffirmativeB();
+    } else if (answer >= 2 && answer <= 6) {
+        generateRandomAffirmativeC();
+    } else if (answer >= 7 && answer <= 11) {
+        generateRandomAffirmativeD();
+    } else if (answer === 12) {
+        generateRandomNegativeA();
+    } else if (answer === 13) {
+        generateRandomNegativeB();
+    } else if (answer >= 14 && answer <= 18) {
+        generateRandomNegativeC();
+    } else if (answer >= 19 && answer <= 23) {
+        generateRandomNegativeD();
+    } else if (answer === 24) {
+        generateRandomNeutralA();
+    } else if (answer >= 25 && answer <= 29) {
+        generateRandomNeutralC();
+    } else if (answer >= 30 && answer <= 34) {
+        generateRandomNeutralD();
+    } else { //Impossible answer to start
+            storedAnswerTriangle = {
+                triangleColor: color(106, 142, 174),
+				textColor: color(209, 250, 255),
+                sizeForText: scaleTextSize(11),
+                messageLineA: "THINK",
+                messageLineB: "OF A YES OR",
+                messageLineC: " NO QUESTION,",
+                messageLineD: "  THEN ASK ME!!"
+            };
+    }
+    }
+};
+
+draw = function() {
+    
+    //Background fading out
+    if (magicSparks && bgRed > 0){
+        bgRed -= 3;
+    }
+    if (magicSparks && bgGreen > 0){
+        bgGreen -= 3;
+    }
+    if (magicSparks && bgBlue > 0){
+        bgBlue -= 3;
+    }
+    
+    //Background fading in
+    if (!magicSparks && bgRed < START_BG_RED) {
+        bgRed++;
+    }
+    if (!magicSparks && bgGreen < START_BG_GREEN) {
+        bgGreen++;
+    }
+    if (!magicSparks && bgBlue < START_BG_BLUE) {
+        bgBlue++;
+    }
+    
+    background(bgRed, bgGreen, bgBlue);
+    
+    
+    textFont(fontMono, 20); //Make a default text
+    
+    if(justAPlural){
+        fill(209, 250, 255);
+    } else {
+        fill(106, 142, 174);
+    }
+    text("PL", plXY, plXY);
+    
+    //Draw the Infinity Ball
+    fill(209, 250, 255);
+    ellipse(canvasCenter, canvasCenter, mainBallSize, mainBallSize);
+    
+    //Green liquid
+    fill(87, 167, 115);
+    ellipse(canvasCenter, canvasCenter, purpleLiquidSize, purpleLiquidSize);
+    
+    //Infinity Ball label
+    fill(106, 142, 174);
+    ellipse(canvasCenter, mainWhiteCircleY, mainWhiteCircleWidth, mainWhiteCircleHeight);
+    fill(209, 250, 255);
+    textSize(bigInfinityTextSize);
+    text("∞", main8X, main8Y);
+    
+    //Asking Button
+    strokeWeight(strokeWeight2);
+    stroke(0);
+    
+    //Cycle Ask button between dark and light Green
+    if( colorShift >= 66 && increaseColor){
+        increaseColor = false;
+    } else if(increaseColor && colorShift <= 66){
+        colorShift = colorShift + 1;
+    } else if (colorShift >= 0 && !increaseColor){
+        colorShift--;
+    } else { //colorShift has dropped below 0
+        increaseColor = true;
+    }
+    fill((21 + colorShift), (113 + colorShift), (69 + colorShift));
+    //21, 113, 69
+
+        rect(askButtonX, askButtonY, askButtonWidth, askButtonHeight, strokeWeight4);
+    fill(209, 250, 255);
+    textSize(askTextSize);
+    text("Ask", askTextX, askTextY);
+    
+    //Draw mini Infinity Ball
+    stroke(209, 250, 255);
+    fill(209, 250, 255);
+    ellipse(miniBallCenterX, miniBallCenterY, miniBallSize, miniBallSize);
+    fill(106, 142, 174);
+    ellipse(miniBallCenterX, miniBallCenterY, miniWhiteCircleSize, miniWhiteCircleSize);
+    fill(209, 250, 255);
+    textSize(miniInfinityTextSize);
+    text("∞", miniInfinityX, miniInfinityY);
+    stroke(0);
+    strokeWeight(strokeWeight2);
+    
+    //Reveal amount of possible answers
+    textSize(revealTextSize);
+    if(fadeInAnswer) {
+        alphaAnswer += 2;
+    } else {
+        alphaAnswer = 0;
+    }
+    fill(21, 113, 69, alphaAnswer);
+    text("The ∞ Ball has:\n(((" +
+    threeLetterPositiveAdjectives.length + "^" + (threeToFourLetterSingleSubjects.length + fiveToSixLetterSingleSubjects.length) + ")^" + fiveToEightLetterVerbs.length + ")^" + threeToTenLetterPositive.length  + ") +\n" +
+    "(((" + threeLetterNegativeAdjectives.length + "^" + (threeToFourLetterSingleSubjects.length + fiveToSixLetterSingleSubjects.length) + ")^" + fiveToEightLetterVerbs.length + ")^" + threeToTenLetterNegative.length  + ") +\n" +
+    "(((" + (threeLetterAdjectives.length) + "^" + (threeToFourLetterSingleSubjects.length + fiveToSixLetterSingleSubjects.length) + ")^" + fiveToEightLetterVerbs.length + ")^" + threeToTenLetterNeutral.length  + ")\n" +
+"possible responses.", numX, numY, numWidth, numHeight);
+    
+    drawTriangle(storedAnswerTriangle);
+    
+    var tempTriangle = {
+            triangleColor: color(21, 113, 69, coverOpacity)
+    };
+    
+    if(magicSparks && sparkDistance < 85){
+        strokeWeight(random(strokeWeight4, strokeWeight12));
+        stroke(color(21, 113, 69, 220));
+        drawTriangle(tempTriangle);
+        fill(21, 113, 69, floor(random(100, 256)));
+        ellipse(canvasCenter, canvasCenter + sparkDistance, sparkSizeA, sparkSizeA);
+        ellipse(canvasCenter + sparkDistance, canvasCenter, sparkSizeC, sparkSizeC);
+        ellipse(canvasCenter + (sparkDistance/1.7), canvasCenter + (sparkDistance/1.7), sparkSizeB, sparkSizeB);
+        ellipse(canvasCenter + (sparkDistance/1.7), canvasCenter - (sparkDistance/1.7), sparkSizeD, sparkSizeD);
+        ellipse(canvasCenter - (sparkDistance/1.7), canvasCenter + (sparkDistance/1.7), sparkSizeD, sparkSizeD);
+        ellipse(canvasCenter - (sparkDistance/1.7), canvasCenter - (sparkDistance/1.7), sparkSizeB, sparkSizeB);
+        ellipse(canvasCenter - sparkDistance, canvasCenter, sparkSizeC, sparkSizeC);
+        ellipse(canvasCenter, canvasCenter - sparkDistance, sparkSizeA, sparkSizeA);
+        sparkSizeA = floor(random(1, strokeWeight8));
+        sparkSizeB = floor(random(1, strokeWeight12));
+        sparkSizeC = floor(random(1, strokeWeight10));
+        sparkSizeD = floor(random(1, strokeWeight5));
+        sparkDistance += sparkDistanceModifier;
+        coverOpacity -= 1;
+        textSize(bigInfinityTextSize + sparkSizeD);
+        fill(21, 113, 69, 200);
+        text("∞", glowing8X, glowing8Y);
+    } else {
+        sparkDistance =0;
+        coverOpacity = 255;
+        magicSparks = false;
+        stroke(0);
+    }
+
+};
+
+mouseClicked = function(){
+    //Check for Clicking of Ask Button
+    if ((mouseX >= askButtonX && mouseX <askRightEdge) && (mouseY >= askButtonY && mouseY <= askBottomEdge)){
+        askInfinityBall();
+        magicSparks = true;
+    }
+    
+    //Check for revealing amount of answers
+    if ((mouseX >= numX && mouseX <numRightEdge) && (mouseY >= numY && mouseY <= height)){
+        fadeInAnswer  = true;
+    } else {
+        fadeInAnswer = false;
+    }
+    
+    //Check for Plural word Button
+    if ((mouseX >= 0 && mouseX <= (width * 0.33)) && (mouseY >= 0 && mouseY <= (height * 0.33))){
+        if(justAPlural) {
+            justAPlural = false;
+        } else {
+            justAPlural = true;
+        }
+    }
+};
+    }};
+
+    // Get the canvas that Processing-js will use
+    var canvas = document.getElementById("mycanvas"); 
+    // Pass the function sketchProc (defined in myCode.js) to Processing's constructor.
+    var processingInstance = new Processing(canvas, sketchProc); 
+ </script>
+
+</html>
