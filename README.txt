@@ -8,8 +8,8 @@ My goals are:
 
 As of 5/10/2020, I have just a few html files up and running, I will include the header comments of my code here:
 
-Key:- means subtraction/deletion from code
-	+ means addition of code/functionality
+Key:  "+" means addition of code/functionality
+	"-" means subtraction/deletion from code
 
 InsaneInfinity.html
 /*****************
